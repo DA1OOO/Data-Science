@@ -1,23 +1,36 @@
 # <1155182964>
 import numpy as np
 import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 # Problem 2
 def problem_2(filename,name):
     # write your logic here, df is a dataframe
     df = pd.read_csv(filename, index_col=0)
+    # 计算哑变量
     temp = pd.get_dummies(df, prefix="", prefix_sep="")
+    # 删除red列
     temp.drop('red', axis=1, inplace=True)
+    # 与原始数据合并
     df = df.join(temp)
     return df
-
-print(problem_2("assignment2_data/color.csv", "color"))
-
 # Problem 3
 def problem_3(filename,k):
     # write your logic here, pc is a numpy array
-    pc = 0
-
+    # 取消科学计数法
+    np.set_printoptions(suppress=True)
+    df = pd.read_csv(filename)
+    # PCA算法
+    df = StandardScaler().fit_transform(df)
+    pca = PCA(n_components=0.85, whiten=True)
+    temp_pc = pca.fit_transform(df)
+    # 精确到小数点后三位
+    temp_pc = np.around(temp_pc, 3)
+    # 取top k 个成分
+    pc = temp_pc[:,:k]
     return pc
+
+print(problem_3("assignment2_data/num.csv",6))
 
 # Problem 4
 def problem_4(sentence):
