@@ -1,12 +1,16 @@
-# <Your student ID>
+# <1155182964>
 import numpy as np
 import pandas as pd
 # Problem 2
 def problem_2(filename,name):
     # write your logic here, df is a dataframe
-    df = 0
-
+    df = pd.read_csv(filename, index_col=0)
+    temp = pd.get_dummies(df, prefix="", prefix_sep="")
+    temp.drop('red', axis=1, inplace=True)
+    df = df.join(temp)
     return df
+
+print(problem_2("assignment2_data/color.csv", "color"))
 
 # Problem 3
 def problem_3(filename,k):
