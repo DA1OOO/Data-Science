@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from nltk import RegexpTokenizer, PorterStemmer
 from sklearn.decomposition import PCA
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
 from sklearn.preprocessing import StandardScaler
 import nltk
 
@@ -62,9 +63,28 @@ def problem_4(sentence):
 def problem_5(doc):
     # write your logic here, df is a dataframe, instead of number
     df = 0
-
+    bigramsSet = set()
+    for sentence in doc:
+        for word in problem_4(sentence):
+            bigramsSet.add(word)
+    # 构建词汇表
+    word_list = list(bigramsSet)
+    word_list.sort()
+    print(word_list)
+    # 计算TF-IDF
+    vectorizer = TfidfVectorizer(ngram_range=(1,2))
+    print(vectorizer.get_feature_names)
+    X = vectorizer.fit_transform(doc)
+    print(X.toarray())
+    # vectorizer = CountVectorizer(ngram_range=(1,2), token_pattern=r"(?u)\b\w+\b")
+    # X = vectorizer.fit_transform(doc)
+    # print(X.toarray())
+    # transform = TfidfTransformer()
+    # Y = transform.fit_transform(X)  # 这里的输入是上面文档的计数矩阵
+    # print(Y.toarray())  # 输出转换为tf-idf后的 Y 矩阵
     return df
 
+print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
 
 # Problem 6
 def problem_6(image_filename):
