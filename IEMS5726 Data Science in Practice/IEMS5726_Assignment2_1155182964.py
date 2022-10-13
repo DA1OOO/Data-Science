@@ -8,12 +8,15 @@ def problem_2(filename,name):
     # write your logic here, df is a dataframe
     df = pd.read_csv(filename, index_col=0)
     # 计算哑变量
-    temp = pd.get_dummies(df, prefix="", prefix_sep="")
+    list = [name]
+    temp = pd.get_dummies(df, columns=list, prefix="", prefix_sep="")
     # 删除red列
     temp.drop('red', axis=1, inplace=True)
     # 与原始数据合并
     df = df.join(temp)
     return df
+print(problem_2("assignment2_data/color.csv", "color"))
+
 # Problem 3
 def problem_3(filename,k):
     # write your logic here, pc is a numpy array
@@ -30,7 +33,6 @@ def problem_3(filename,k):
     pc = temp_pc[:,:k]
     return pc
 
-print(problem_3("assignment2_data/num.csv",6))
 
 # Problem 4
 def problem_4(sentence):
