@@ -44,10 +44,13 @@ def problem_4(sentence):
     # 去除标点后分词
     output = RegexpTokenizer('\w+').tokenize(sentence)
     stemmer = PorterStemmer()
+    # 遍历获得词根
     stemSentence = []
     for token in output:
         stemSentence.append(stemmer.stem(token))
+    # 生成二元组
     temp_bigrams = list(nltk.bigrams(stemSentence))
+    # 拼接为新格式
     for bigram in temp_bigrams:
         stemSentence.append(bigram[0] + ' ' + bigram[1])
     output = stemSentence
