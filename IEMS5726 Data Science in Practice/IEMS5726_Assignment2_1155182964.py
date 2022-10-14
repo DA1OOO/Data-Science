@@ -6,6 +6,8 @@ from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
 from sklearn.preprocessing import StandardScaler
 import nltk
+import cv2 as cv
+import matplotlib.pyplot as plt
 
 
 # Problem 2
@@ -84,24 +86,48 @@ def problem_5(doc):
     # print(Y.toarray())  # 输出转换为tf-idf后的 Y 矩阵
     return df
 
-print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
+# print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
 
 # Problem 6
 def problem_6(image_filename):
     # write your logic here, keypoint and descriptor are BRISK object
-    keypoint = 0
-    descriptor = 0
-
+    image = cv.imread(filename=image_filename, flags=cv.IMREAD_GRAYSCALE)
+    BRISK = cv.BRISK_create()
+    keypoint, descriptor = BRISK.detectAndCompute(image, None)
     return keypoint, descriptor
 
+print(problem_6('assignment2_data/sample1.jpg'))
 
 # Problem 7
 def problem_7(image1_filename, image2_filename):
     # write your logic here, common_descriptor is the common desc.
     common_descriptor = 0
+    image1 = cv.imread(filename = image1_filename, flags=cv.IMREAD_GRAYSCALE)
+    image2 = cv.imread(filename = image2_filename, flags=cv.IMREAD_GRAYSCALE)
+    keypoint1, descriptors1 = problem_6(image1_filename)
+    keypoint2, descriptors2 = problem_6(image2_filename)
+    BFMatcher = cv.BFMatcher(normType=cv.NORM_HAMMING, crossCheck=True)
+    # Matching descriptor vectors using Brute Force Matcher
+    matches = BFMatcher.match(queryDescriptors=descriptors1,
+                              trainDescriptors=descriptors2)
 
+    # Sort them in the order of their distance
+    print(matches)
+    matches = sorted(matches, key=lambda x: x.distance)
+    print(matches)
+    # Draw first 15 matches
+    output = cv.drawMatches(img1=image1,
+                            keypoints1=keypoint1,
+                            img2=image2,
+                            keypoints2=keypoint2,
+                            matches1to2=matches[:15],
+                            outImg=None,
+                            flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    plt.imshow(output)
+    plt.show()
     return common_descriptor
 
+# print(problem_7("assignment2_data/sample1.jpg", "assignment2_data/sample2.jpg"))
 
 # Problem 8
 def problem_8(audio_filename, sr, n_mels, n_fft):
