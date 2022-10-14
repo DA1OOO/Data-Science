@@ -96,38 +96,22 @@ def problem_6(image_filename):
     keypoint, descriptor = BRISK.detectAndCompute(image, None)
     return keypoint, descriptor
 
-print(problem_6('assignment2_data/sample1.jpg'))
+# print(problem_6('assignment2_data/sample1.jpg'))
 
 # Problem 7
 def problem_7(image1_filename, image2_filename):
     # write your logic here, common_descriptor is the common desc.
-    common_descriptor = 0
-    image1 = cv.imread(filename = image1_filename, flags=cv.IMREAD_GRAYSCALE)
-    image2 = cv.imread(filename = image2_filename, flags=cv.IMREAD_GRAYSCALE)
     keypoint1, descriptors1 = problem_6(image1_filename)
     keypoint2, descriptors2 = problem_6(image2_filename)
     BFMatcher = cv.BFMatcher(normType=cv.NORM_HAMMING, crossCheck=True)
     # Matching descriptor vectors using Brute Force Matcher
     matches = BFMatcher.match(queryDescriptors=descriptors1,
                               trainDescriptors=descriptors2)
-
     # Sort them in the order of their distance
-    print(matches)
-    matches = sorted(matches, key=lambda x: x.distance)
-    print(matches)
-    # Draw first 15 matches
-    output = cv.drawMatches(img1=image1,
-                            keypoints1=keypoint1,
-                            img2=image2,
-                            keypoints2=keypoint2,
-                            matches1to2=matches[:15],
-                            outImg=None,
-                            flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    plt.imshow(output)
-    plt.show()
+    common_descriptor = sorted(matches, key=lambda x: x.distance)
     return common_descriptor
 
-# print(problem_7("assignment2_data/sample1.jpg", "assignment2_data/sample2.jpg"))
+print(problem_7("assignment2_data/sample1.jpg", "assignment2_data/sample2.jpg"))
 
 # Problem 8
 def problem_8(audio_filename, sr, n_mels, n_fft):
