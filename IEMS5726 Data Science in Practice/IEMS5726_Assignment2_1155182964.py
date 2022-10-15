@@ -1,13 +1,15 @@
 # <1155182964>
 import numpy as np
 import pandas as pd
+import torch
 from nltk import RegexpTokenizer, PorterStemmer
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
 from sklearn.preprocessing import StandardScaler
 import nltk
 import cv2 as cv
-import matplotlib.pyplot as plt
+import soundfile as sf
+import torchaudio
 
 
 # Problem 2
@@ -59,6 +61,7 @@ def problem_4(sentence):
     output = stemSentence
     return output
 
+
 # print(problem_4("Antoni Gaudí was a Spanish architect from Catalonia."))
 
 # Problem 5
@@ -74,7 +77,7 @@ def problem_5(doc):
     word_list.sort()
     print(word_list)
     # 计算TF-IDF
-    vectorizer = TfidfVectorizer(ngram_range=(1,2))
+    vectorizer = TfidfVectorizer(ngram_range=(1, 2))
     print(vectorizer.get_feature_names)
     X = vectorizer.fit_transform(doc)
     print(X.toarray())
@@ -86,6 +89,7 @@ def problem_5(doc):
     # print(Y.toarray())  # 输出转换为tf-idf后的 Y 矩阵
     return df
 
+
 # print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
 
 # Problem 6
@@ -95,6 +99,7 @@ def problem_6(image_filename):
     BRISK = cv.BRISK_create()
     keypoint, descriptor = BRISK.detectAndCompute(image, None)
     return keypoint, descriptor
+
 
 # print(problem_6('assignment2_data/sample1.jpg'))
 
@@ -111,19 +116,41 @@ def problem_7(image1_filename, image2_filename):
     common_descriptor = sorted(matches, key=lambda x: x.distance)
     return common_descriptor
 
-print(problem_7("assignment2_data/sample1.jpg", "assignment2_data/sample2.jpg"))
+
+# print(problem_7("assignment2_data/sample1.jpg", "assignment2_data/sample2.jpg"))
 
 # Problem 8
 def problem_8(audio_filename, sr, n_mels, n_fft):
     # write your logic here, spec is a tensor
-    spec = 0
-
+    sig, old_sr = torchaudio.load(audio_filename)
+    if old_sr != sr:
+        num_channels = sig.shape[0]
+        resig = torchaudio.transforms.Resample(old_sr, sr)(sig[:1, :])
+        if num_channels > 1:
+            retwo = torchaudio.transforms.Resample(old_sr, sr)(sig[1:, :])
+            resig = torch.cat([resig, retwo])
+    else:
+        resig = sig
+    spec = torchaudio.transforms.MelSpectrogram(sr, n_fft=n_fft, hop_length=None, n_mels=n_mels)(resig)
+    spec = torchaudio.transforms.AmplitudeToDB(top_db=80)(spec)
     return spec
+
+
+print(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024))
 
 
 # Problem 9
 def problem_9(spec, max_mask_pct, n_freq_masks, n_time_masks):
     # write your logic here
+    _, n_mels, n_steps = spec.shape
+    mask_value = spec.mean()
     aug_spec = spec
-
+    freq_mask_param = max_mask_pct * n_mels
+    for _ in range(n_freq_masks):
+        aug_spec = torchaudio.transforms.FrequencyMasking(freq_mask_param)(aug_spec, mask_value)
+    time_mask_param = max_mask_pct * n_steps
+    for _ in range(n_time_masks):
+        aug_spec = torchaudio.transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
     return aug_spec
+
+# print(problem_9(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024), 0.1, 2, 2))
