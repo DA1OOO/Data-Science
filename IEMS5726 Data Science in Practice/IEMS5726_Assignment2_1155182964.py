@@ -108,7 +108,7 @@ def problem_5(doc):
     return df
 
 
-print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
+# print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
 
 # Problem 6
 def problem_6(image_filename):
@@ -141,16 +141,7 @@ def problem_7(image1_filename, image2_filename):
 def problem_8(audio_filename, sr, n_mels, n_fft):
     # write your logic here, spec is a tensor
     sig, old_sr = torchaudio.load(audio_filename)
-    if old_sr != sr:
-        num_channels = sig.shape[0]
-        resig = torchaudio.transforms.Resample(old_sr, sr)(sig[:1, :])
-        if num_channels > 1:
-            retwo = torchaudio.transforms.Resample(old_sr, sr)(sig[1:, :])
-            resig = torch.cat([resig, retwo])
-    else:
-        resig = sig
-    spec = torchaudio.transforms.MelSpectrogram(sr, n_fft=n_fft, hop_length=None, n_mels=n_mels)(resig)
-    spec = torchaudio.transforms.AmplitudeToDB(top_db=80)(spec)
+    spec = torchaudio.transforms.MelSpectrogram(sr, n_fft=n_fft, hop_length=None, n_mels=n_mels)(sig)
     return spec
 
 
