@@ -4,11 +4,10 @@ import pandas as pd
 import torch
 from nltk import RegexpTokenizer, PorterStemmer
 from sklearn.decomposition import PCA
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import StandardScaler
 import nltk
 import cv2 as cv
-import soundfile as sf
 import torchaudio
 
 
@@ -67,27 +66,36 @@ def problem_4(sentence):
 # Problem 5
 def problem_5(doc):
     # write your logic here, df is a dataframe, instead of number
-    df = 0
-    bigramsSet = set()
+    token_bigram_set = set()
+    word_bigram_set = set()
     for sentence in doc:
-        for word in problem_4(sentence):
-            bigramsSet.add(word)
+        for word in getWordBigram(sentence):
+            word_bigram_set.add(word)
+        for token in problem_4(sentence):
+            token_bigram_set.add(token)
     # 构建词汇表
-    word_list = list(bigramsSet)
+    token_list = list(token_bigram_set)
+    token_list.sort()
+    word_list = list(word_bigram_set)
     word_list.sort()
-    print(word_list)
+    # 计算TF
+    vectorizer = CountVectorizer(vocabulary=word_list, token_pattern='\w{1,}', ngram_range=(1, 2))
+    tf_array = vectorizer.transform(doc).toarray()
+    # 计算DF
+    df_value = list()
+    for row in range(0, len(word_list)):
+        sum = 0
+        for col in range(0, len(doc)):
+            sum += tf_array[col][row]
+        df_value.append(sum)
     # 计算TF-IDF
-    vectorizer = TfidfVectorizer(ngram_range=(1, 2))
-    print(vectorizer.get_feature_names)
-    X = vectorizer.fit_transform(doc)
-    print(X.toarray())
-    # vectorizer = CountVectorizer(ngram_range=(1,2), token_pattern=r"(?u)\b\w+\b")
-    # X = vectorizer.fit_transform(doc)
-    # print(X.toarray())
-    # transform = TfidfTransformer()
-    # Y = transform.fit_transform(X)  # 这里的输入是上面文档的计数矩阵
-    # print(Y.toarray())  # 输出转换为tf-idf后的 Y 矩阵
-    return df
+    tf_idf_array = np.array(tf_array, dtype=float)
+    for row in range(0, len(word_list)):
+        for col in range(0, len(doc)):
+            temp = tf_array[col][row] * np.log10(len(doc) / df_value[row])
+            tf_idf_array[col][row] = round(temp, 3)
+    df = pd.DataFrame(tf_idf_array, columns=token_list)
+    return df.to_string()
 
 
 # print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
@@ -136,7 +144,7 @@ def problem_8(audio_filename, sr, n_mels, n_fft):
     return spec
 
 
-print(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024))
+# print(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024))
 
 
 # Problem 9
@@ -153,4 +161,17 @@ def problem_9(spec, max_mask_pct, n_freq_masks, n_time_masks):
         aug_spec = torchaudio.transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
     return aug_spec
 
+
 # print(problem_9(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024), 0.1, 2, 2))
+
+
+# 得到原始单词的二元组(不转换为词根)
+def getWordBigram(sentence):
+    output = RegexpTokenizer('\w+').tokenize(sentence)
+    word_list = list()
+    for word in output:
+        word_list.append(word.lower())
+    temp_bigrams = list(nltk.bigrams(word_list))
+    for bigram in temp_bigrams:
+        word_list.append(bigram[0] + ' ' + bigram[1])
+    return word_list
