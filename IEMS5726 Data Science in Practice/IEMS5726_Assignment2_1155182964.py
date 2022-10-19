@@ -10,6 +10,16 @@ import nltk
 import cv2 as cv
 import torchaudio
 
+# 得到原始单词的二元组(不转换为词根)
+def getWordBigram(sentence):
+    output = RegexpTokenizer('\w+').tokenize(sentence)
+    word_list = list()
+    for word in output:
+        word_list.append(word.lower())
+    temp_bigrams = list(nltk.bigrams(word_list))
+    for bigram in temp_bigrams:
+        word_list.append(bigram[0] + ' ' + bigram[1])
+    return word_list
 
 # Problem 2
 def problem_2(filename, name):
@@ -95,10 +105,10 @@ def problem_5(doc):
             temp = tf_array[col][row] * np.log10(len(doc) / df_value[row])
             tf_idf_array[col][row] = round(temp, 3)
     df = pd.DataFrame(tf_idf_array, columns=token_list)
-    return df.to_string()
+    return df
 
 
-# print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
+print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
 
 # Problem 6
 def problem_6(image_filename):
@@ -163,15 +173,3 @@ def problem_9(spec, max_mask_pct, n_freq_masks, n_time_masks):
 
 
 # print(problem_9(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024), 0.1, 2, 2))
-
-
-# 得到原始单词的二元组(不转换为词根)
-def getWordBigram(sentence):
-    output = RegexpTokenizer('\w+').tokenize(sentence)
-    word_list = list()
-    for word in output:
-        word_list.append(word.lower())
-    temp_bigrams = list(nltk.bigrams(word_list))
-    for bigram in temp_bigrams:
-        word_list.append(bigram[0] + ' ' + bigram[1])
-    return word_list
