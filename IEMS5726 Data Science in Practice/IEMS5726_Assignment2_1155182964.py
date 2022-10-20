@@ -127,10 +127,8 @@ def problem_7(image1_filename, image2_filename):
     keypoint1, descriptors1 = problem_6(image1_filename)
     keypoint2, descriptors2 = problem_6(image2_filename)
     BFMatcher = cv.BFMatcher(normType=cv.NORM_HAMMING, crossCheck=True)
-    # Matching descriptor vectors using Brute Force Matcher
     matches = BFMatcher.match(queryDescriptors=descriptors1,
                               trainDescriptors=descriptors2)
-    # Sort them in the order of their distance
     common_descriptor = sorted(matches, key=lambda x: x.distance)
     return common_descriptor
 
