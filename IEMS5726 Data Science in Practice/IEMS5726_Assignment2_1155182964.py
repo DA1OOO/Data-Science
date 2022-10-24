@@ -1,7 +1,6 @@
 # <1155182964>
 import numpy as np
 import pandas as pd
-import torch
 from nltk import RegexpTokenizer, PorterStemmer
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import CountVectorizer
@@ -9,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 import nltk
 import cv2 as cv
 import torchaudio
+
 
 # 得到原始单词的二元组(不转换为词根)
 def getWordBigram(sentence):
@@ -20,6 +20,7 @@ def getWordBigram(sentence):
     for bigram in temp_bigrams:
         word_list.append(bigram[0] + ' ' + bigram[1])
     return word_list
+
 
 # Problem 2
 def problem_2(filename, name):
@@ -71,8 +72,6 @@ def problem_4(sentence):
     return output
 
 
-# print(problem_4("Antoni Gaudí was a Spanish architect from Catalonia."))
-
 # Problem 5
 def problem_5(doc):
     # write your logic here, df is a dataframe, instead of number
@@ -108,18 +107,14 @@ def problem_5(doc):
     return df
 
 
-# print(problem_5(["CUHK is located in Shatin", "CUHK has a large campus", "Shatin is a district in the New Territories"]))
-
 # Problem 6
 def problem_6(image_filename):
     # write your logic here, keypoint and descriptor are BRISK object
-    image = cv.imread(filename=image_filename, flags=cv.IMREAD_GRAYSCALE)
+    image = cv.imread(filename=image_filename)
     BRISK = cv.BRISK_create()
     keypoint, descriptor = BRISK.detectAndCompute(image, None)
     return keypoint, descriptor
 
-
-# print(problem_6('assignment2_data/sample1.jpg'))
 
 # Problem 7
 def problem_7(image1_filename, image2_filename):
@@ -133,17 +128,12 @@ def problem_7(image1_filename, image2_filename):
     return common_descriptor
 
 
-# print(problem_7("assignment2_data/sample1.jpg", "assignment2_data/sample2.jpg"))
-
 # Problem 8
 def problem_8(audio_filename, sr, n_mels, n_fft):
     # write your logic here, spec is a tensor
     sig, old_sr = torchaudio.load(audio_filename)
     spec = torchaudio.transforms.MelSpectrogram(sr, n_fft=n_fft, hop_length=None, n_mels=n_mels)(sig)
     return spec
-
-
-# print(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024))
 
 
 # Problem 9
@@ -159,5 +149,3 @@ def problem_9(spec, max_mask_pct, n_freq_masks, n_time_masks):
     for _ in range(n_time_masks):
         aug_spec = torchaudio.transforms.TimeMasking(time_mask_param)(aug_spec, mask_value)
     return aug_spec
-
-# print(problem_9(problem_8("assignment2_data/StarWars60.wav", 1000, 64, 1024), 0.1, 2, 2))
