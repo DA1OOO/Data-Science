@@ -28,7 +28,7 @@ def problem_2(filename, predictors, target):
     # 数据标准化
     sc = StandardScaler()
     x_train = sc.fit_transform(x_train)
-    x_test = sc.fit_transform(x_test)
+    x_test = sc.transform(x_test)
     # 转为tensor
     x_train = torch.FloatTensor(x_train)
     y_train = torch.FloatTensor(y_train.to_numpy())
@@ -90,9 +90,9 @@ def problem_3(filename, predictors, target):
     return model, mean_cv_acc, sd_cv_acc
 
 
-print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
-                ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
-                 "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"], "quality"))
+# print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
+#                 ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
+#                  "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"], "quality"))
 
 
 # Problem 4
@@ -102,17 +102,20 @@ def problem_4(filename, predictors, target):
     df = pd.read_csv(filename)
     print(df.to_string())
     x = df[predictors]
+    sc = StandardScaler()
     y = df[target]
     # 数据划分，70%为训练集，30%为测试集
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=5726)
+    x_train = sc.fit_transform(x_train)
+    x_test = sc.transform(x_test)
     # 初始化分类器
-    clf = SVR.SVC(kernel='poly')
+    clf = SVR(kernel='poly')
     # 模型训练
     clf.fit(x_train, y_train)
-
-
+    y_pred = clf.predict(x_test)
 
     return model, test_mae, test_rmse
+
 
 # print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1","Length2","Length3","Height","Width"], "Weight"))
 # Problem 5
