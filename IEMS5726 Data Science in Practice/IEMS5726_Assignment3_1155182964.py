@@ -72,7 +72,6 @@ def problem_2(filename, predictors, target):
 
 # Problem 3
 def problem_3(filename, predictors, target):
-    mean_cv_acc, sd_cv_acc = 0, 0
     # 数据加载
     df = pd.read_csv(filename)
     x = df[predictors]
@@ -84,8 +83,7 @@ def problem_3(filename, predictors, target):
     model = RandomForestClassifier(random_state=5726)
     model.fit(x, y)
     # 8折交叉
-    kf = KFold(n_splits=8)
-    score = cross_val_score(model, x, y, cv=kf)
+    score = cross_val_score(model, x, y, cv=8)
     # 求均值和标准差
     mean_cv_acc = np.mean(score)
     sd_cv_acc = np.std(score)
@@ -99,12 +97,24 @@ print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
 
 # Problem 4
 def problem_4(filename, predictors, target):
-    # write your logic here, model is the SVR model
     model, test_mae, test_rmse = 0, 0, 0
+    # 加载数据
+    df = pd.read_csv(filename)
+    print(df.to_string())
+    x = df[predictors]
+    y = df[target]
+    # 数据划分，70%为训练集，30%为测试集
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=5726)
+    # 初始化分类器
+    clf = SVR.SVC(kernel='poly')
+    # 模型训练
+    clf.fit(x_train, y_train)
+
+
 
     return model, test_mae, test_rmse
 
-
+# print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1","Length2","Length3","Height","Width"], "Weight"))
 # Problem 5
 def problem_5(filename, predictors, target):
     # write your logic here, model is the MLR model
