@@ -1,6 +1,9 @@
 # <1155182964>
+from math import sqrt
+
 import numpy as np
 import pandas as pd
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 import torch
 import torch.nn as nn
@@ -100,24 +103,29 @@ def problem_4(filename, predictors, target):
     model, test_mae, test_rmse = 0, 0, 0
     # 加载数据
     df = pd.read_csv(filename)
-    print(df.to_string())
     x = df[predictors]
     sc = StandardScaler()
-    y = df[target]
+    y = df[target].values.reshape(-1, 1)
     # 数据划分，70%为训练集，30%为测试集
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=5726)
+    # 数据标准化
     x_train = sc.fit_transform(x_train)
     x_test = sc.transform(x_test)
+    y_train = sc.fit_transform(y_train)
+    y_test = sc.transform(y_test)
     # 初始化分类器
-    clf = SVR(kernel='poly')
+    model = SVR(kernel='poly')
     # 模型训练
-    clf.fit(x_train, y_train)
-    y_pred = clf.predict(x_test)
-
+    model.fit(x_train, y_train)
+    y_pred = model.predict(x_test)
+    test_mae = mean_absolute_error(y_test, y_pred)
+    test_rmse = sqrt(mean_squared_error(y_test, y_pred))
     return model, test_mae, test_rmse
 
 
-# print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1","Length2","Length3","Height","Width"], "Weight"))
+print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
+
+
 # Problem 5
 def problem_5(filename, predictors, target):
     # write your logic here, model is the MLR model
