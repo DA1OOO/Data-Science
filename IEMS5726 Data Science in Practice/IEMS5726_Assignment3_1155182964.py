@@ -16,25 +16,24 @@ from sklearn.cluster import KMeans
 
 # Problem 2
 def problem_2(filename, predictors, target):
-    # write your logic here, model is the NN model
-    model, test_precision, test_recall = 0, 0, 0
     batch_size, learning_rate = 10, 0.01
-    # load file
+    # 载入文件
     df = pd.read_csv(filename)
-    df = df.iloc[1:]
-    # set manual seed
+    # 设置manual_seed
     torch.manual_seed(5726)
     x = df[predictors]
     y = df[target]
-    # split data
+    # 数据划分，70%为训练集，30%为测试集
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=5726)
-    # normalize Data
+    # 数据标准化
     sc = StandardScaler()
     x_train = sc.fit_transform(x_train)
     x_test = sc.fit_transform(x_test)
     # 转为tensor
     x_train = torch.FloatTensor(x_train)
     y_train = torch.FloatTensor(y_train.to_numpy())
+    x_test = torch.FloatTensor(x_test)
+    y_test = torch.FloatTensor(y_test.to_numpy())
     # 序列初始化模型 输出层 - hidden层- 输出层
     model = nn.Sequential(nn.Linear(len(predictors), 5), nn.ReLU(), nn.Linear(5, 3), nn.ReLU(), nn.Linear(3, 1),
                           nn.Sigmoid())
@@ -53,6 +52,15 @@ def problem_2(filename, predictors, target):
         loss.backward()  # Backward propagation
         optimizer.step()  # Gradient descent
     print("===> training end.")
+
+    pred_y_test = model(x_test)
+    pred_y_test = pred_y_test.detach().numpy()
+
+    # 将预测的概率转化为0-1
+    pred_y_test = np.around(pred_y_test, 0).astype(int)
+    test_recall = metrics.recall_score(y_test, pred_y_test)
+    test_precision = metrics.precision_score(y_test, pred_y_test)
+
     return model, test_precision, test_recall
 
 
@@ -66,8 +74,17 @@ print(problem_2("IEMS5726_Assignment3_Data/winequality-white-binary.csv",
 def problem_3(filename, predictors, target):
     # write your logic here, model is the RF model
     model, mean_cv_acc, sd_cv_acc = 0, 0, 0
+    # 数据加载
+    df = pd.read_csv(filename)
+    x = df[predictors]
+    y = df[target]
 
     return model, mean_cv_acc, sd_cv_acc
+
+
+# print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
+#                 ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
+#                  "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"], "quality"))
 
 
 # Problem 4
