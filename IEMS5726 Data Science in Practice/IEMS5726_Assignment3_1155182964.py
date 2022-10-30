@@ -58,8 +58,8 @@ def problem_2(filename, predictors, target):
 
     # 将预测的概率转化为0-1
     pred_y_test = np.around(pred_y_test, 0).astype(int)
-    test_recall = metrics.recall_score(y_test, pred_y_test)
     test_precision = metrics.precision_score(y_test, pred_y_test)
+    test_recall = metrics.recall_score(y_test, pred_y_test)
 
     return model, test_precision, test_recall
 
