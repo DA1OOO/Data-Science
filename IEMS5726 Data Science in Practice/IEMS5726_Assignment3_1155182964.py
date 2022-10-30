@@ -40,7 +40,7 @@ def problem_2(filename, predictors, target):
     loss_function = nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-    # train model
+    # 训练数据
     print("===> start training...")
     losses = []
     for epoch in range(5000):
@@ -64,27 +64,37 @@ def problem_2(filename, predictors, target):
     return model, test_precision, test_recall
 
 
-print(problem_2("IEMS5726_Assignment3_Data/winequality-white-binary.csv",
-                ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
-                 "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"],
-                "quality"))
+# print(problem_2("IEMS5726_Assignment3_Data/winequality-white-binary.csv",
+#                 ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
+#                  "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"],
+#                 "quality"))
 
 
 # Problem 3
 def problem_3(filename, predictors, target):
-    # write your logic here, model is the RF model
-    model, mean_cv_acc, sd_cv_acc = 0, 0, 0
+    mean_cv_acc, sd_cv_acc = 0, 0
     # 数据加载
     df = pd.read_csv(filename)
     x = df[predictors]
     y = df[target]
-
+    # 数据标准化
+    sc = StandardScaler()
+    x = sc.fit_transform(x)
+    # 模型训练
+    model = RandomForestClassifier(random_state=5726)
+    model.fit(x, y)
+    # 8折交叉
+    kf = KFold(n_splits=8)
+    score = cross_val_score(model, x, y, cv=kf)
+    # 求均值和标准差
+    mean_cv_acc = np.mean(score)
+    sd_cv_acc = np.std(score)
     return model, mean_cv_acc, sd_cv_acc
 
 
-# print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
-#                 ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
-#                  "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"], "quality"))
+print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
+                ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
+                 "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"], "quality"))
 
 
 # Problem 4
