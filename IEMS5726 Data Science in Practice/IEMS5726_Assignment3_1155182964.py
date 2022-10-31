@@ -100,7 +100,6 @@ def problem_3(filename, predictors, target):
 
 # Problem 4
 def problem_4(filename, predictors, target):
-    model, test_mae, test_rmse = 0, 0, 0
     # 加载数据
     df = pd.read_csv(filename)
     x = df[predictors]
@@ -122,15 +121,32 @@ def problem_4(filename, predictors, target):
     return model, test_mae, test_rmse
 
 
-print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
+# print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
 
 
 # Problem 5
 def problem_5(filename, predictors, target):
-    # write your logic here, model is the MLR model
-    model, mean_cv_mse, sd_cv_mse = 0, 0, 0
-
+    # 加载数据
+    df = pd.read_csv(filename)
+    x = df[predictors]
+    y = df[target].values.reshape(-1, 1)
+    # 数据标准化
+    sc_x = StandardScaler()
+    sc_y = StandardScaler()
+    x = sc_x.fit_transform(x)
+    y = sc_y.fit_transform(y)
+    # 模型初始化
+    model = linear_model.LinearRegression()
+    model.fit(x, y)
+    # 交叉验证
+    score = cross_val_score(model, x, y, cv=8, scoring='neg_mean_squared_error')
+    score = score * (-1)
+    mean_cv_mse = np.mean(score)
+    sd_cv_mse = np.std(score)
     return model, mean_cv_mse, sd_cv_mse
+
+
+# print(problem_5("IEMS5726_Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
 
 
 # Problem 6
