@@ -151,7 +151,26 @@ def problem_5(filename, predictors, target):
 
 # Problem 6
 def problem_6(train_filename, predictors, test_filename):
-    # write your logic here, model is the k-mean model
-    model, k, result = 0, 0, []
-
+    # 加载数据
+    train_data = pd.read_csv(train_filename)
+    test_data = pd.read_csv(test_filename)
+    # 数据标准化
+    sc = StandardScaler()
+    train_data = sc.fit_transform(train_data)
+    # 确定k值
+    sse = []
+    for k in range(1, 11):
+        kmeans = KMeans(n_clusters=k)
+        kmeans.fit(train_data)
+        sse.append(kmeans.inertia_)
+    kl = KneeLocator(range(1, 11), sse, curve="convex", direction="decreasing")
+    k = kl.elbow
+    # 模型训练
+    model = KMeans(init="random", n_clusters=k, n_init=5, max_iter=300, random_state=5726)
+    model.fit(train_data)
+    # 测试数据结果预测
+    result = model.predict(test_data)
     return model, k, result
+
+
+print(problem_6("IEMS5726_Assignment3_Data/sample1.csv", ["x", "y"], "IEMS5726_Assignment3_Data/sample2.csv"))
