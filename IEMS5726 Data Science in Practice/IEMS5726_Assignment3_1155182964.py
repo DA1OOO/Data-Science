@@ -153,7 +153,9 @@ def problem_5(filename, predictors, target):
 def problem_6(train_filename, predictors, test_filename):
     # 加载数据
     train_data = pd.read_csv(train_filename)
+    train_data = train_data[predictors]
     test_data = pd.read_csv(test_filename)
+    test_data = test_data[predictors]
     # 数据标准化
     sc = StandardScaler()
     train_data = sc.fit_transform(train_data)
