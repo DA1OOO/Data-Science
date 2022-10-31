@@ -104,15 +104,14 @@ def problem_4(filename, predictors, target):
     # 加载数据
     df = pd.read_csv(filename)
     x = df[predictors]
-    sc = StandardScaler()
     y = df[target].values.reshape(-1, 1)
+    # 数据标准化
+    sc_x = StandardScaler()
+    sc_y = StandardScaler()
+    x = sc_x.fit_transform(x)
+    y = sc_y.fit_transform(y)
     # 数据划分，70%为训练集，30%为测试集
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=5726)
-    # 数据标准化
-    x_train = sc.fit_transform(x_train)
-    x_test = sc.transform(x_test)
-    y_train = sc.fit_transform(y_train)
-    y_test = sc.transform(y_test)
     # 初始化分类器
     model = SVR(kernel='poly')
     # 模型训练
