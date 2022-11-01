@@ -19,24 +19,23 @@ from sklearn.cluster import KMeans
 
 # Problem 2
 def problem_2(filename, predictors, target):
-    batch_size, learning_rate = 10, 0.01
+    learning_rate = 0.01
     # 载入文件
     df = pd.read_csv(filename)
     # 设置manual_seed
     torch.manual_seed(5726)
-    x = df[predictors]
-    y = df[target]
+    x = df[predictors].values
+    y = df[target].values.reshape(-1, 1)
+    # 数据标准化
+    sc_x = StandardScaler()
+    x = sc_x.fit_transform(x)
     # 数据划分，70%为训练集，30%为测试集
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=5726)
-    # 数据标准化
-    sc = StandardScaler()
-    x_train = sc.fit_transform(x_train)
-    x_test = sc.transform(x_test)
     # 转为tensor
     x_train = torch.FloatTensor(x_train)
-    y_train = torch.FloatTensor(y_train.to_numpy())
+    y_train = torch.FloatTensor(y_train)
     x_test = torch.FloatTensor(x_test)
-    y_test = torch.FloatTensor(y_test.to_numpy())
+    y_test = torch.FloatTensor(y_test)
     # 序列初始化模型 输出层 - hidden层- 输出层
     model = nn.Sequential(nn.Linear(len(predictors), 5), nn.ReLU(), nn.Linear(5, 3), nn.ReLU(), nn.Linear(3, 1),
                           nn.Sigmoid())
@@ -46,7 +45,7 @@ def problem_2(filename, predictors, target):
     # 训练数据
     print("===> start training...")
     losses = []
-    for epoch in range(5000):
+    for epoch in range(500):
         pred_y = model(x_train)  # Forward propagation
         pred_y = pred_y.squeeze(-1)
         loss = loss_function(pred_y, y_train)
@@ -58,7 +57,6 @@ def problem_2(filename, predictors, target):
 
     pred_y_test = model(x_test)
     pred_y_test = pred_y_test.detach().numpy()
-
     # 将预测的概率转化为0-1
     pred_y_test = np.around(pred_y_test, 0).astype(int)
     test_precision = metrics.precision_score(y_test, pred_y_test)
@@ -174,5 +172,4 @@ def problem_6(train_filename, predictors, test_filename):
     result = model.predict(test_data)
     return model, k, result
 
-
-print(problem_6("IEMS5726_Assignment3_Data/sample1.csv", ["x", "y"], "IEMS5726_Assignment3_Data/sample2.csv"))
+# print(problem_6("IEMS5726_Assignment3_Data/sample1.csv", ["x", "y"], "IEMS5726_Assignment3_Data/sample2.csv"))
