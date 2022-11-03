@@ -11,8 +11,20 @@ def connect_port(port):
     return my_socket
 
 
+# 用户输入
+def input_info():
+    sid = input("===> Enter your student ID: ")
+    print(len(sid))
+    print(type(sid.isdecimal()))
+    # 数据校验
+    while len(sid) != 10 or (sid.isdecimal() is not True):
+        sid = input("===> Error input! Please input again: ")
+    return sid
+
+
 if __name__ == '__main__':
     my_sokect = connect_port(9335)
-    # 从服务器接收数据并解码以获取字符串。
+    sid = input_info()
+    # 从服务器接收数据并解码以获取字符串
     print(my_sokect.recv(1024).decode())
     my_sokect.close()
