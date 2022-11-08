@@ -22,10 +22,12 @@ def problem_2(filenames):
     fig = plt.figure(tight_layout=True)
     # 分为一行二列
     gs = gridspec.GridSpec(1, 2)
+    plt.suptitle("Test result", fontsize=13, x=0.5, y=0.98)
     # test 1
     # 该figure的位置
     ax = fig.add_subplot(gs[0, 0])
-    ax.boxplot(data1, labels=filenames)
+    # ax.boxplot(data1, labels=filenames)
+    ax.boxplot(data1, labels=['Class A', 'Class B', 'Class C'])
     ax.set_title('Test1')
     ax.set_ylim([ymin, ymax])
     plt.xlabel("Class")
@@ -34,7 +36,8 @@ def problem_2(filenames):
     # test 2
     # 该figure的位置
     ax = fig.add_subplot(gs[0, 1])
-    ax.boxplot(data2, labels=filenames)
+    # ax.boxplot(data2, labels=filenames)
+    ax.boxplot(data1, labels=['Class A', 'Class B', 'Class C'])
     ax.set_title('Test2')
     ax.set_ylim([ymin, ymax])
     plt.xlabel("Class")
