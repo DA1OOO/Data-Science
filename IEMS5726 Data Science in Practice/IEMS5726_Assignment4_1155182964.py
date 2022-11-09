@@ -46,30 +46,39 @@ def problem_2(filenames):
     plt.ylabel("Score")
     plt.grid()
 
-    plt.savefig("problem2")  # do not call plt.show()
+    plt.savefig("problem2")
     plt.show()
 
 
-print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
-                 "IEMS5726_Assignment4_Data/classC.csv"]))
+# print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
+#                  "IEMS5726_Assignment4_Data/classC.csv"]))
 
 
 # Problem 3
 def problem_3(filenames):
-    # 读取数据
-    f = open(filenames[0], encoding="utf-8")
-    # 转小写
-    txt = f.read().lower()
-    # 匹配数字、字母、空格
-    txt = re.sub(r'[^\w\s]', '', txt)
-    # 匹配非数字
-    txt = re.sub(r'[^\D]', '', txt)
-    print(txt)
-    # 生成词云
-    word_cloud = WordCloud(collocations=False, background_color='white', random_state=5726).generate(txt)
-    plt.imshow(word_cloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.savefig("problem3")  # do not call plt.show()
+    filenames_num = len(filenames)
+    if filenames_num % 2 != 0:
+        gs_row = (filenames_num + 1) / 2
+    else:
+        gs_row = filenames_num / 2
+    gs = gridspec.GridSpec(int(gs_row), 2)
+    fig = plt.figure(tight_layout=True)
+    for i in range(0, filenames_num):
+        # 读取数据
+        f = open(filenames[i], encoding="utf-8")
+        # 转小写
+        txt = f.read().lower()
+        # 匹配数字、字母、空格
+        txt = re.sub(r'[^\w\s]', '', txt)
+        # 匹配非数字
+        txt = re.sub(r'[^\D]', '', txt)
+        # 生成词云
+        word_cloud = WordCloud(collocations=False, background_color='white', random_state=5726).generate(txt)
+        ax = fig.add_subplot(gs[int(i / 2), int(i % 2)])
+        plt.imshow(word_cloud, interpolation='bilinear')
+        plt.axis("off")
+
+    plt.savefig("problem3")
     plt.show()
 
 
