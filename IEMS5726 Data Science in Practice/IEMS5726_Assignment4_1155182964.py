@@ -14,7 +14,7 @@ def problem_2(filenames):
     data1 = pd.DataFrame()
     data2 = pd.DataFrame()
     for i in range(0, len(filenames)):
-        df = pd.read_csv(filenames[i])
+        df = pd.read_csv(filenames[i], header=None)
         data1[filenames[i]] = df.iloc[:, 0]
         data2[filenames[i]] = df.iloc[:, 1]
     ymin = 0
@@ -47,8 +47,8 @@ def problem_2(filenames):
     plt.savefig("problem2")  # do not call plt.show()
 
 
-print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
-                 "IEMS5726_Assignment4_Data/classC.csv"]))
+# print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
+#                  "IEMS5726_Assignment4_Data/classC.csv"]))
 
 
 # Problem 3
