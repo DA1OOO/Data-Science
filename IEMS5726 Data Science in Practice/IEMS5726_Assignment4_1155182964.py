@@ -11,12 +11,14 @@ from wordcloud import WordCloud
 # Problem 2
 def problem_2(filenames):
     # write your logic here
-    data1 = pd.DataFrame()
-    data2 = pd.DataFrame()
+    data1 = list()
+    data2 = list()
     for i in range(0, len(filenames)):
         df = pd.read_csv(filenames[i], header=None)
-        data1[filenames[i]] = df.iloc[:, 0]
-        data2[filenames[i]] = df.iloc[:, 1]
+        data1.append(df.iloc[:, 0])
+        print(df.iloc[:, 0])
+        data2.append(df.iloc[:, 1])
+        print(df.iloc[:, 1])
     ymin = 0
     ymax = 100
     fig = plt.figure(tight_layout=True)
@@ -37,7 +39,7 @@ def problem_2(filenames):
     # 该figure的位置
     ax = fig.add_subplot(gs[0, 1])
     # ax.boxplot(data2, labels=filenames)
-    ax.boxplot(data1, labels=['Class A', 'Class B', 'Class C'])
+    ax.boxplot(data2, labels=['Class A', 'Class B', 'Class C'])
     ax.set_title('Test2')
     ax.set_ylim([ymin, ymax])
     plt.xlabel("Class")
@@ -45,25 +47,34 @@ def problem_2(filenames):
     plt.grid()
 
     plt.savefig("problem2")  # do not call plt.show()
+    plt.show()
 
 
-# print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
-#                  "IEMS5726_Assignment4_Data/classC.csv"]))
+print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
+                 "IEMS5726_Assignment4_Data/classC.csv"]))
 
 
 # Problem 3
 def problem_3(filenames):
-    # write your logic here
+    # 读取数据
     f = open(filenames[0], encoding="utf-8")
-    word_cloud = WordCloud(collocations=False, background_color=
-    'white').generate(f.read())
+    # 转小写
+    txt = f.read().lower()
+    # 匹配数字、字母、空格
+    txt = re.sub(r'[^\w\s]', '', txt)
+    # 匹配非数字
+    txt = re.sub(r'[^\D]', '', txt)
+    print(txt)
+    # 生成词云
+    word_cloud = WordCloud(collocations=False, background_color='white', random_state=5726).generate(txt)
     plt.imshow(word_cloud, interpolation='bilinear')
     plt.axis("off")
     plt.savefig("problem3")  # do not call plt.show()
     plt.show()
 
 
-print(problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt", "IEMS5726_Assignment4_Data/paragraph3.txt"]))
+# print(problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt",
+#                  "IEMS5726_Assignment4_Data/paragraph3.txt"]))
 
 
 # Problem 4
