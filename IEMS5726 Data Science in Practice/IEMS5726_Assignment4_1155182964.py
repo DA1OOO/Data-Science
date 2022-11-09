@@ -45,7 +45,6 @@ def problem_2(filenames):
     plt.grid()
 
     plt.savefig("problem2")  # do not call plt.show()
-    plt.show()
 
 
 print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
@@ -55,8 +54,16 @@ print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_D
 # Problem 3
 def problem_3(filenames):
     # write your logic here
-
+    f = open(filenames[0], encoding="utf-8")
+    word_cloud = WordCloud(collocations=False, background_color=
+    'white').generate(f.read())
+    plt.imshow(word_cloud, interpolation='bilinear')
+    plt.axis("off")
     plt.savefig("problem3")  # do not call plt.show()
+    plt.show()
+
+
+print(problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt", "IEMS5726_Assignment4_Data/paragraph3.txt"]))
 
 
 # Problem 4
