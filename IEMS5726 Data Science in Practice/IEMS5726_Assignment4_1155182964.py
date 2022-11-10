@@ -1,4 +1,6 @@
 # <1155182964 DAI Yayuan>
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -50,7 +52,7 @@ def problem_2(filenames):
     plt.show()
 
 
-# print(problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
+# problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
 #                  "IEMS5726_Assignment4_Data/classC.csv"]))
 
 
@@ -82,15 +84,29 @@ def problem_3(filenames):
     plt.show()
 
 
-# print(problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt",
+# problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt",
 #                  "IEMS5726_Assignment4_Data/paragraph3.txt"]))
 
 
 # Problem 4
 def problem_4(filename, start, end, target):
-    # write your logic here
+    start_time = datetime.strptime(start, "%d/%m/%Y")
+    end_time = datetime.strptime(end, "%d/%m/%Y")
+    df = pd.read_csv(filename)
+    # 删除日期为空的行
+    df = df.dropna(subset=['date'])
+    # 将str格式时期转为datetime格式
+    df['date'] = pd.to_datetime(df['date'])
+    df = df[df['Name'].isin(target)]
+    df = df[(df['date'] <= end_time) & (df['date'] >= start_time)]
+    plt.title("Close value")
+    ax = sns.lineplot(x="date", y="close", hue="Name", data=df)
+    plt.grid()
+    plt.savefig("problem4")
+    plt.show()
 
-    plt.savefig("problem4")  # do not call plt.show()
+
+# problem_4("IEMS5726_Assignment4_Data/all_stocks_5yr.csv", "1/1/2018", "14/1/2018", ["ABBV", "AIV", "DFS"])
 
 
 # Problem 5
