@@ -146,5 +146,5 @@ def problem_6(filename, start, end, column):
     plt.show()
 
 
-problem_6("IEMS5726_Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
-          ["Temperature", "Fuel_Price", "CPI", "Unemployment", "IsHoliday"])
+# problem_6("IEMS5726_Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
+#           ["Temperature", "Fuel_Price", "CPI", "Unemployment", "IsHoliday"])
