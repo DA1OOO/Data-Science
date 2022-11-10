@@ -76,7 +76,7 @@ def problem_3(filenames):
         txt = re.sub(r'[^\D]', '', txt)
         # 生成词云
         word_cloud = WordCloud(collocations=False, background_color='white', random_state=5726).generate(txt)
-        ax = fig.add_subplot(gs[int(i / 2), int(i % 2)])
+        fig.add_subplot(gs[int(i / 2), int(i % 2)])
         plt.imshow(word_cloud, interpolation='bilinear')
         plt.axis("off")
 
@@ -85,7 +85,7 @@ def problem_3(filenames):
 
 
 # problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt",
-#                  "IEMS5726_Assignment4_Data/paragraph3.txt"]))
+#                  "IEMS5726_Assignment4_Data/paragraph3.txt"])
 
 
 # Problem 4
@@ -100,7 +100,7 @@ def problem_4(filename, start, end, target):
     df = df[df['Name'].isin(target)]
     df = df[(df['date'] <= end_time) & (df['date'] >= start_time)]
     plt.title("Close value")
-    ax = sns.lineplot(x="date", y="close", hue="Name", data=df)
+    sns.lineplot(x="date", y="close", hue="Name", data=df)
     plt.grid()
     plt.savefig("problem4")
     plt.show()
@@ -111,13 +111,40 @@ def problem_4(filename, start, end, target):
 
 # Problem 5
 def problem_5(df):
-    # write your logic here
+    new_df = pd.DataFrame(index=df.index, columns=df.columns)
+    new_df.loc['First Year'] = df.loc['First Year'] / df.iloc[0, 0:].sum()
+    new_df.loc['Second Year'] = df.loc['Second Year'] / df.iloc[1, 0:].sum()
+    new_df.plot(kind='barh', stacked=True, figsize=(10, 5))
+    plt.title("Passing Percetage")
+    plt.ylabel('Years')
+    plt.savefig("problem5")
+    plt.show()
 
-    plt.savefig("problem5")  # do not call plt.show()
+
+# problem_5(pd.DataFrame({'Boys': [67, 78], 'Girls': [72, 80], },
+#                        index=['First Year', 'Second Year']))
 
 
 # Problem 6
 def problem_6(filename, start, end, column):
-    # write your logic here
+    df = pd.read_csv(filename)
+    plt.rcParams['figure.figsize'] = (10.0, 8.0)  # set default size of plots
+    plt.rcParams['image.interpolation'] = 'nearest'
+    plt.rcParams['image.cmap'] = 'gray'
+    df["Date"] = pd.to_datetime(df["Date"], format="%d/%m/%Y")
+    df_grouped = df.groupby("Date").agg({"Temperature": "mean",
+                                         "Fuel_Price": "mean",
+                                         "CPI": "mean",
+                                         "Unemployment": "mean",
+                                         "IsHoliday": "min"}).reset_index()
+    count_columns_ex_date = len(df_grouped.columns[1:])
+    for idx, col in enumerate(df_grouped.columns[1:]):
+        plt.subplot(count_columns_ex_date, 1, idx + 1)
+        plt.plot(df_grouped["Date"], df_grouped[col])
+        plt.ylabel(col)
+    plt.savefig("problem6")
+    plt.show()
 
-    plt.savefig("problem6")  # do not call plt.show()
+
+problem_6("IEMS5726_Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
+          ["Temperature", "Fuel_Price", "CPI", "Unemployment", "IsHoliday"])
