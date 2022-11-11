@@ -112,17 +112,26 @@ def problem_4(filename, start, end, target):
 # Problem 5
 def problem_5(df):
     new_df = pd.DataFrame(index=df.index, columns=df.columns)
-    new_df.loc['First Year'] = df.loc['First Year'] / df.iloc[0, 0:].sum()
-    new_df.loc['Second Year'] = df.loc['Second Year'] / df.iloc[1, 0:].sum()
+
+    new_df.loc['First Year'] = (df.loc['First Year'] / df.iloc[0, 0:].sum()).round(decimals=4)
+    new_df.loc['Second Year'] = (df.loc['Second Year'] / df.iloc[1, 0:].sum()).round(decimals=4)
     new_df.plot(kind='barh', stacked=True, figsize=(10, 5))
-    plt.title("Passing Percetage")
+    # 1 Year / Boys
+    plt.text(new_df.iloc[0, 0], 0, new_df.iloc[0, 0])
+    # 1 Year / Girls
+    plt.text(1, 0, new_df.iloc[0, 1])
+    # 2 Year / Boys
+    plt.text(new_df.iloc[1, 0], 1, new_df.iloc[1, 0])
+    # 2 Year / Girls
+    plt.text(1, 1, new_df.iloc[1, 1])
+    plt.title("Passing Percentage")
     plt.ylabel('Years')
     plt.savefig("problem5")
     plt.show()
 
 
-# problem_5(pd.DataFrame({'Boys': [67, 78], 'Girls': [72, 80], },
-#                        index=['First Year', 'Second Year']))
+problem_5(pd.DataFrame({'Boys': [67, 78], 'Girls': [72, 80], },
+                       index=['First Year', 'Second Year']))
 
 
 # Problem 6
