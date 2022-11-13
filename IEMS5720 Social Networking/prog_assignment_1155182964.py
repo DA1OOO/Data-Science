@@ -1,13 +1,10 @@
 import pandas as pd
 import networkx as nx
 
-DIMENSION = 53
+DIMENSION = 54
 MY_ID = 8
-df = pd.read_csv('Social_Matrix_2022_9.csv')
+df = pd.read_csv('Social_Matrix_2022_9.csv', header=None)
 sociomatrix = df.values
-
-print(sociomatrix.shape)
-print(len(sociomatrix[0]))
 
 directed_graph = nx.DiGraph()
 directed_graph.add_nodes_from(range(1, DIMENSION + 1))
