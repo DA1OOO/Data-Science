@@ -130,8 +130,8 @@ def problem_5(df):
     plt.show()
 
 
-problem_5(pd.DataFrame({'Boys': [67, 78], 'Girls': [72, 80], },
-                       index=['First Year', 'Second Year']))
+# problem_5(pd.DataFrame({'Boys': [67, 78], 'Girls': [72, 80], },
+#                        index=['First Year', 'Second Year']))
 
 
 # Problem 6
