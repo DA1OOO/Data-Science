@@ -49,11 +49,10 @@ def problem_2(filenames):
     plt.grid()
 
     plt.savefig("problem2")
-    plt.show()
 
 
 # problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
-#                  "IEMS5726_Assignment4_Data/classC.csv"]))
+#                  "IEMS5726_Assignment4_Data/classC.csv"])
 
 
 # Problem 3
@@ -81,7 +80,6 @@ def problem_3(filenames):
         plt.axis("off")
 
     plt.savefig("problem3")
-    plt.show()
 
 
 # problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt",
@@ -103,7 +101,6 @@ def problem_4(filename, start, end, target):
     sns.lineplot(x="date", y="close", hue="Name", data=df)
     plt.grid()
     plt.savefig("problem4")
-    plt.show()
 
 
 # problem_4("IEMS5726_Assignment4_Data/all_stocks_5yr.csv", "1/1/2018", "14/1/2018", ["ABBV", "AIV", "DFS"])
@@ -127,7 +124,6 @@ def problem_5(df):
     plt.title("Passing Percentage")
     plt.ylabel('Years')
     plt.savefig("problem5")
-    plt.show()
 
 
 # problem_5(pd.DataFrame({'Boys': [67, 78], 'Girls': [72, 80], },
@@ -146,13 +142,13 @@ def problem_6(filename, start, end, column):
                                          "CPI": "mean",
                                          "Unemployment": "mean",
                                          "IsHoliday": "min"}).reset_index()
+    df_grouped = df_grouped.fillna(method='ffill')
     count_columns_ex_date = len(df_grouped.columns[1:])
     for idx, col in enumerate(df_grouped.columns[1:]):
         plt.subplot(count_columns_ex_date, 1, idx + 1)
         plt.plot(df_grouped["Date"], df_grouped[col])
         plt.ylabel(col)
     plt.savefig("problem6")
-    plt.show()
 
 
 # problem_6("IEMS5726_Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
