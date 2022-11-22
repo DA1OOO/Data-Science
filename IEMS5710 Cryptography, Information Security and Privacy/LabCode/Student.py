@@ -1,4 +1,4 @@
-## 客户端
+## Student客户端
 import socket
 
 
@@ -14,8 +14,6 @@ def connect_port(port):
 # 用户输入
 def input_info():
     sid = input("===> Enter your student ID: ")
-    print(len(sid))
-    print(type(sid.isdecimal()))
     # 数据校验
     while len(sid) != 10 or (sid.isdecimal() is not True):
         sid = input("===> Error input! Please input again: ")
@@ -24,7 +22,8 @@ def input_info():
 
 if __name__ == '__main__':
     my_sokect = connect_port(9335)
-    sid = input_info()
+    sid = '1234567890'
+    my_sokect.send(sid.encode())
     # 从服务器接收数据并解码以获取字符串
     print(my_sokect.recv(1024).decode())
     my_sokect.close()
