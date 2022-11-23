@@ -35,10 +35,11 @@ def connect_accept(my_socket):
         print('Connect Success!', addr)
         # 向客户发送感谢信息。编码以发送字节类型。
         c.send('Thanks for your connect'.encode())
-        str = c.recv(1024)
-        print("Received msg: %s" % str)
+        msg = str(c.recv(1024), encoding='utf-8')
+        print("Received msg: %s" % msg)
         # 关闭与客户端的连接
         c.close()
+        print("---------Connect close------------")
 
 
 def generate_root_ca():

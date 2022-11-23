@@ -23,7 +23,8 @@ def input_info():
 if __name__ == '__main__':
     my_sokect = connect_port(9335)
     sid = '1234567890'
-    my_sokect.send(sid.encode())
+    msg = str(f"I am {sid}\n")
+    my_sokect.send(msg.encode())
     # 从服务器接收数据并解码以获取字符串
     print(my_sokect.recv(1024).decode())
     my_sokect.close()
