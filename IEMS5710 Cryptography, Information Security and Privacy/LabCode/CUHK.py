@@ -28,14 +28,17 @@ def initial_socket():
 
 # 接受客户端连接，并保持监听
 def connect_accept(my_socket):
+    tag = 1
     while True:
         # 与客户端建立连接。
         c, addr = my_socket.accept()
-        print("----------------------------------")
-        print('Connect Success!', addr)
+
+        print('----------', 'No.', tag, 'Connect Success!', '---------')
+        print('addr:', addr)
+        tag += 1
         # 向客户发送感谢信息。编码以发送字节类型。
-        c.send('Thanks for your connect'.encode())
-        str = c.recv(1024)
+        c.send('Thanks for your connect!'.encode())
+        str = c.recv(1024).decode()
         print("Received msg: %s" % str)
         # 关闭与客户端的连接
         c.close()

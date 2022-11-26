@@ -20,7 +20,7 @@
 
 ##### CA Work Process
 ![img.png](source/img11123.png)
-1. **申请认证**：服务器需自己生成公钥私钥对pub_svr & pri_svr，同时根据 pri_svr 生成请求文件 csr,提交给CA，csr中含有公钥、组织信息、个人信息(域名)等信息。(图一中server.req就是csr请求文件)
+1. **申请认证**：服务器需自己生成公钥私钥对pub_svr & pri_svr，同时根据 pri_svr 生成请求文件 csr, 提交给CA，csr中含有公钥、组织信息、个人信息(域名)等信息。(图一中server.req就是csr请求文件)
 2. **审核信息**：CA通过线上、线下等多种手段验证申请者提供信息的真实性，如组织是否存在、企业是否合法，是否拥有域名的所有权等。
 3. **签发证书**：如信息审核通过，CA会向申请者签发认证文件-证书。
 证书包含以下信息：申请者公钥、申请者的组织信息和个人信息、签发机构 CA的信息、有效时间、证书序列号等信息的明文，同时包含一个签名。
@@ -41,3 +41,5 @@
 - [4] Generate Self-Sign Certificate: https://blog.csdn.net/TheGreenSummer/article/details/110285923
 - [5] SSL/TLS: https://blog.csdn.net/wuliganggang/article/details/78428866
 - [6] SSL/TLS: https://blog.csdn.net/vip97yigang/article/details/84721027
+- [7] Wraps pyOpenSSL for quick and easy PKI: https://github.com/LLNL/certipy
+- [8] OpenSsl.crypto: https://vimsky.com/zh-tw/examples/detail/python-method-OpenSSL.crypto.html
