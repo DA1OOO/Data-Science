@@ -42,6 +42,7 @@ def connect_accept(my_socket):
         print("Received msg: %s" % str)
         # 关闭与客户端的连接
         c.close()
+        print("---------Connect close------------")
 
 
 def generate_root_ca():
