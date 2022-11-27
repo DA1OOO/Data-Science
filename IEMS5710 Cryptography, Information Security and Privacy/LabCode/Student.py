@@ -61,3 +61,12 @@ if __name__ == '__main__':
     my_sokect_1.send(byte_csr_request)
     print(my_sokect_1.recv(1024).decode())
     my_sokect_1.close()
+
+    # 通过socket从CUHK获取cert2
+    my_sokect_2 = connect_port(9335)
+    byte_cert2 = my_sokect_2.recv(4096)
+    cert2 = crypto.load_certificate(crypto.FILETYPE_PEM, byte_cert2)
+    print('===> Get Cert2!')
+    print('===> SID:', sid, 'sign finished!')
+
+    #
