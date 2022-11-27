@@ -121,6 +121,7 @@ if __name__ == '__main__':
     with open(KEY_FILE, "r") as f:
         root_pri_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
     # 生成cert2
+    csr_request.sign(key_pair, digest='sha256')
     cert2 = generate_cer(csr_request, root_cert, root_pri_key)
     byte_cert2 = crypto.dump_certificate(crypto.FILETYPE_PEM, cert2)
     # 将cert2通过socket发送到Student进程

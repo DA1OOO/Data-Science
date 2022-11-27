@@ -69,4 +69,4 @@ if __name__ == '__main__':
     print('===> Get Cert2!')
     print('===> SID:', sid, 'sign finished!')
 
-    #
+    # 初始化request [SID, cert2]

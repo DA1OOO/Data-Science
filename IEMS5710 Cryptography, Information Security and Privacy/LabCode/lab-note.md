@@ -23,7 +23,7 @@
 1. **申请认证**：服务器需自己生成公钥私钥对pub_svr & pri_svr，同时根据 pri_svr 生成请求文件 csr, 提交给CA，csr中含有公钥、组织信息、个人信息(域名)等信息。(图一中server.req就是csr请求文件)
 2. **审核信息**：CA通过线上、线下等多种手段验证申请者提供信息的真实性，如组织是否存在、企业是否合法，是否拥有域名的所有权等。
 3. **签发证书**：如信息审核通过，CA会向申请者签发认证文件-证书。
-证书包含以下信息：申请者公钥、申请者的组织信息和个人信息、签发机构 CA的信息、有效时间、证书序列号等信息的明文，同时包含一个签名。
+证书包含以下信息：申请者公钥、申请者的组织信息和个人信息、签发机构CA的信息、有效时间、证书序列号等信息的明文，同时包含一个签名。
 签名的产生算法：首先，使用散列函数计算公开的明文信息的信息摘要，然后，采用 CA的私钥对信息摘要进行加密，密文即签名。（图一中生成server.crt）
 4. **返回证书**：client如果请求验证服务器，服务器需返回证书文件。（图一中handshake传回server.crt）
 5. **client验证证书**：client读取证书中的相关的明文信息，采用相同的散列函数计算得到信息摘要，然后，利用对应 CA的公钥解密签名数据，对比证书的信息摘要，如果一致，则可以确认证书的合法性，即公钥合法。客户端然后验证证书相关的域名信息、有效时间是否吊销等信息。
@@ -42,4 +42,4 @@
 - [5] SSL/TLS: https://blog.csdn.net/wuliganggang/article/details/78428866
 - [6] SSL/TLS: https://blog.csdn.net/vip97yigang/article/details/84721027
 - [7] Wraps pyOpenSSL for quick and easy PKI: https://github.com/LLNL/certipy
-- [8] OpenSsl.crypto: https://vimsky.com/zh-tw/examples/detail/python-method-OpenSSL.crypto.html
+- [8] OpenSsl.crypto Usage: https://vimsky.com/zh-tw/examples/detail/python-method-OpenSSL.crypto.html
