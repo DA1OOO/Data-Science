@@ -51,8 +51,8 @@ def problem_2(filenames):
     plt.savefig("problem2")
 
 
-# problem_2(["IEMS5726_Assignment4_Data/classA.csv", "IEMS5726_Assignment4_Data/classB.csv",
-#                  "IEMS5726_Assignment4_Data/classC.csv"])
+# problem_2(["Assignment4_Data/classA.csv", "Assignment4_Data/classB.csv",
+#                  "Assignment4_Data/classC.csv"])
 
 
 # Problem 3
@@ -82,8 +82,8 @@ def problem_3(filenames):
     plt.savefig("problem3")
 
 
-# problem_3(["IEMS5726_Assignment4_Data/paragraph1.txt", "IEMS5726_Assignment4_Data/paragraph2.txt",
-#                  "IEMS5726_Assignment4_Data/paragraph3.txt"])
+# problem_3(["Assignment4_Data/paragraph1.txt", "Assignment4_Data/paragraph2.txt",
+#                  "Assignment4_Data/paragraph3.txt"])
 
 
 # Problem 4
@@ -103,7 +103,7 @@ def problem_4(filename, start, end, target):
     plt.savefig("problem4")
 
 
-# problem_4("IEMS5726_Assignment4_Data/all_stocks_5yr.csv", "1/1/2018", "14/1/2018", ["ABBV", "AIV", "DFS"])
+# problem_4("Assignment4_Data/all_stocks_5yr.csv", "1/1/2018", "14/1/2018", ["ABBV", "AIV", "DFS"])
 
 
 # Problem 5
@@ -151,5 +151,5 @@ def problem_6(filename, start, end, column):
     plt.savefig("problem6")
 
 
-# problem_6("IEMS5726_Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
+# problem_6("Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
 #           ["Temperature", "Fuel_Price", "CPI", "Unemployment", "IsHoliday"])

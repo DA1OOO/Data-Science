@@ -65,7 +65,7 @@ def problem_2(filename, predictors, target):
     return model, test_precision, test_recall
 
 
-# print(problem_2("IEMS5726_Assignment3_Data/winequality-white-binary.csv",
+# print(problem_2("Assignment3_Data/winequality-white-binary.csv",
 #                 ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
 #                  "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"],
 #                 "quality"))
@@ -91,7 +91,7 @@ def problem_3(filename, predictors, target):
     return model, mean_cv_acc, sd_cv_acc
 
 
-# print(problem_3("IEMS5726_Assignment3_Data/winequality-white.csv",
+# print(problem_3("Assignment3_Data/winequality-white.csv",
 #                 ["fixed acidity", "volatile acidity", "citric acid", "residual sugar", "chlorides",
 #                  "free sulfur dioxide", "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"], "quality"))
 
@@ -119,7 +119,7 @@ def problem_4(filename, predictors, target):
     return model, test_mae, test_rmse
 
 
-# print(problem_4("IEMS5726_Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
+# print(problem_4("Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
 
 
 # Problem 5
@@ -144,7 +144,7 @@ def problem_5(filename, predictors, target):
     return model, mean_cv_mse, sd_cv_mse
 
 
-# print(problem_5("IEMS5726_Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
+# print(problem_5("Assignment3_Data/Fish.csv", ["Length1", "Length2", "Length3", "Height", "Width"], "Weight"))
 
 
 # Problem 6
@@ -172,4 +172,4 @@ def problem_6(train_filename, predictors, test_filename):
     result = model.predict(test_data)
     return model, k, result
 
-# print(problem_6("IEMS5726_Assignment3_Data/sample1.csv", ["x", "y"], "IEMS5726_Assignment3_Data/sample2.csv"))
+# print(problem_6("Assignment3_Data/sample1.csv", ["x", "y"], "Assignment3_Data/sample2.csv"))
