@@ -1,4 +1,4 @@
-# <1155182964>
+
 from math import sqrt
 
 import numpy as np
