@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 import numpy as np
@@ -149,7 +148,6 @@ def problem_6(filename, start, end, column):
         plt.plot(df_grouped["Date"], df_grouped[col])
         plt.ylabel(col)
     plt.savefig("problem6")
-
 
 # problem_6("Assignment4_Data/Features data set.csv", "1/1/2010", "31/7/2013",
 #           ["Temperature", "Fuel_Price", "CPI", "Unemployment", "IsHoliday"])

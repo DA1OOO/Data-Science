@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from nltk import RegexpTokenizer, PorterStemmer
@@ -8,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import nltk
 import cv2 as cv
 import torchaudio
+
 
 # 得到原始单词的二元组(不转换为词根)
 def getWordBigram(sentence):
@@ -19,6 +19,7 @@ def getWordBigram(sentence):
     for bigram in temp_bigrams:
         word_list.append(bigram[0] + ' ' + bigram[1])
     return word_list
+
 
 # Problem 2
 def problem_2(filename, name):

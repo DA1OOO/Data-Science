@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from numpy.linalg import inv
@@ -35,10 +34,11 @@ def problem_4(a, b):
     output = a * b
     return output
 
+
 # Problem 5
 def problem_5(filename, col):
     full_col = ['CRIM', 'ZN', 'INDUS', 'CHAS', 'NOX', 'RM', 'AGE', 'DIS', 'RAD', 'TAX', 'PTRATIO', 'B', 'LSTAT',
-                     'MEDV']
+                'MEDV']
     ############### Step A B C ###############
     temp_df = pd.read_csv(filename).dropna().reset_index(drop=True)
     ###############   Step D   ###############
