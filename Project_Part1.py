@@ -207,9 +207,6 @@ def cross_Validation(data):
         knn_RESULTS.append(knn_accuracy)
         ensemble_RESULTS.append(ensemble_accuracy)
 
-    prediction = ensemble_model.predict(live_pred_data)
-    print(prediction)
-
     print('RF Accuracy = ' + str(sum(rf_RESULTS) / len(rf_RESULTS)))
     print('KNN Accuracy = ' + str(sum(knn_RESULTS) / len(knn_RESULTS)))
     print('Ensemble Accuracy = ' + str(sum(ensemble_RESULTS) / len(ensemble_RESULTS)))
@@ -244,7 +241,6 @@ def main():
     """
     data = _get_indicator_data(data)
     print(data.columns)
-    live_pred_data = data.iloc[-16:-11]
     data = _produce_prediction(data, window=15)
     del (data['close'])
     data = data.dropna()  # Some indicators produce NaN values for the first few rows, we just remove them here
