@@ -2,6 +2,7 @@ import yfinance as yf
 import datetime
 import pandas as pd
 import numpy as np
+import warnings
 from finta import TA
 import matplotlib.pyplot as plt
 
@@ -25,7 +26,6 @@ symbol = 'SPY'  # Symbol of the desired stock
 
 # List of symbols for technical indicators
 INDICATORS = ['RSI', 'MACD', 'STOCH', 'ADL', 'ATR', 'MOM', 'MFI', 'ROC', 'OBV', 'CCI', 'EMV', 'VORTEX']
-live_pred_data = 0
 
 
 def _exponential_smooth(data, alpha):
@@ -95,12 +95,12 @@ def _train_KNN(X_train, y_train, X_test, y_test):
     knn_best = knn_gs.best_estimator_
 
     # Check best n_neigbors value
-    print(knn_gs.best_params_)
+    # print(knn_gs.best_params_)
 
     prediction = knn_best.predict(X_test)
 
-    print(classification_report(y_test, prediction))
-    print(confusion_matrix(y_test, prediction))
+    # print(classification_report(y_test, prediction))
+    # print(confusion_matrix(y_test, prediction))
 
     return knn_best
 
@@ -116,12 +116,12 @@ def _ensemble_model(rf_model, knn_model, X_train, y_train, X_test, y_test):
     ensemble.fit(X_train, y_train)
 
     # test our model on the test data
-    print(ensemble.score(X_test, y_test))
+    # print(ensemble.score(X_test, y_test))
 
     prediction = ensemble.predict(X_test)
 
-    print(classification_report(y_test, prediction))
-    print(confusion_matrix(y_test, prediction))
+    # print(classification_report(y_test, prediction))
+    # print(confusion_matrix(y_test, prediction))
 
     return ensemble
 
@@ -147,12 +147,12 @@ def _train_random_forest(X_train, y_train, X_test, y_test):
     rf_best = rf_gs.best_estimator_
 
     # Check best n_estimators value
-    print(rf_gs.best_params_)
+    # print(rf_gs.best_params_)
 
     prediction = rf_best.predict(X_test)
 
-    print(classification_report(y_test, prediction))
-    print(confusion_matrix(y_test, prediction))
+    # print(classification_report(y_test, prediction))
+    # print(confusion_matrix(y_test, prediction))
 
     return rf_best
 
@@ -202,7 +202,8 @@ def cross_Validation(data):
         knn_accuracy = accuracy_score(y_test.values, knn_prediction)
         ensemble_accuracy = accuracy_score(y_test.values, ensemble_prediction)
 
-        print(rf_accuracy, knn_accuracy, ensemble_accuracy)
+        print('Single Train Accuracy:', rf_accuracy, knn_accuracy, ensemble_accuracy)
+
         rf_RESULTS.append(rf_accuracy)
         knn_RESULTS.append(knn_accuracy)
         ensemble_RESULTS.append(ensemble_accuracy)
@@ -213,6 +214,7 @@ def cross_Validation(data):
 
 
 def main():
+    warnings.filterwarnings("ignore")
     """
     Next we pull the historical data using yfinance
     Rename the column names because finta uses the lowercase names
@@ -222,7 +224,6 @@ def main():
     data = yf.download(symbol, start=start, end=end, interval=INTERVAL)
     data.rename(columns={"Close": 'close', "High": 'high', "Low": 'low', 'Volume': 'volume', 'Open': 'open'},
                 inplace=True)
-    print(data)
     tmp = data.iloc[-60:]
     tmp['close'].plot()
     plt.show()
@@ -240,12 +241,10 @@ def main():
     
     """
     data = _get_indicator_data(data)
-    print(data.columns)
     data = _produce_prediction(data, window=15)
     del (data['close'])
     data = data.dropna()  # Some indicators produce NaN values for the first few rows, we just remove them here
     data.tail()
-    del (live_pred_data['close'])
 
     cross_Validation(data)
 
