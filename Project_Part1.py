@@ -227,8 +227,8 @@ def main():
                 inplace=True)
     tmp = data.iloc[-60:]
     tmp['close'].plot()
-    plt.show()
-
+    plt.savefig("origin_data.png")
+    plt.close()
     """
     Next we clean our data and perform feature engineering to create new technical indicator features that our
     model can learn from
@@ -236,7 +236,7 @@ def main():
     data = _exponential_smooth(data, 0.65)
     tmp1 = data.iloc[-60:]
     tmp1['close'].plot()
-    plt.show()
+    plt.savefig("smooth_data.png")
 
     """
     
