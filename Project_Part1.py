@@ -1,326 +1,257 @@
-import numpy as np  # linear algebra
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from nltk.corpus import stopwords
-from collections import Counter
-import string
-import re
-import seaborn as sns
-from tqdm import tqdm
+import yfinance as yf
+import datetime
+import pandas as pd
+import numpy as np
+from finta import TA
 import matplotlib.pyplot as plt
-from torch.utils.data import TensorDataset, DataLoader
-from sklearn.model_selection import train_test_split
+
+from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from sklearn import metrics
+
+"""
+Defining some constants for data mining
+"""
+
+NUM_DAYS = 10000  # The number of days of historical data to retrieve
+INTERVAL = '1d'  # Sample rate of historical data
+symbol = 'SPY'  # Symbol of the desired stock
+
+# List of symbols for technical indicators
+INDICATORS = ['RSI', 'MACD', 'STOCH', 'ADL', 'ATR', 'MOM', 'MFI', 'ROC', 'OBV', 'CCI', 'EMV', 'VORTEX']
+live_pred_data = 0
 
 
-def preprocess_string(s):
-    # Remove all non-word characters (everything except numbers and letters)
-    s = re.sub(r"[^\w\s]", '', s)
-    # Replace all runs of whitespaces with no space
-    s = re.sub(r"\s+", '', s)
-    # replace digits with no space
-    s = re.sub(r"\d", '', s)
-
-    return s
+def _exponential_smooth(data, alpha):
+    """
+    Function that exponentially smooths dataset so values are less 'rigid'
+    :param alpha: weight factor to weight recent values more
+    """
+    return data.ewm(alpha=alpha).mean()
 
 
-def tockenize(x_train, y_train, x_val, y_val):
-    word_list = []
+def _get_indicator_data(data):
+    """
+    Function that uses the finta API to calculate technical indicators used as the features
+    :return:
+    """
+    for indicator in INDICATORS:
+        ind_data = eval('TA.' + indicator + '(data)')
+        if not isinstance(ind_data, pd.DataFrame):
+            ind_data = ind_data.to_frame()
+        data = data.merge(ind_data, left_index=True, right_index=True)
+    data.rename(columns={"14 period EMV.": '14 period EMV'}, inplace=True)
 
-    stop_words = set(stopwords.words('english'))
-    for sent in x_train:
-        for word in sent.lower().split():
-            word = preprocess_string(word)
-            if word not in stop_words and word != '':
-                word_list.append(word)
+    # Also calculate moving averages for features
+    data['ema50'] = data['close'] / data['close'].ewm(50).mean()
+    data['ema21'] = data['close'] / data['close'].ewm(21).mean()
+    data['ema15'] = data['close'] / data['close'].ewm(14).mean()
+    data['ema5'] = data['close'] / data['close'].ewm(5).mean()
 
-    corpus = Counter(word_list)
-    # sorting on the basis of most common words
-    corpus_ = sorted(corpus, key=corpus.get, reverse=True)[:1000]
-    # creating a dict
-    onehot_dict = {w: i + 1 for i, w in enumerate(corpus_)}
+    # Instead of using the actual volume value (which changes over time), we normalize it with a moving volume average
+    data['normVol'] = data['volume'] / data['volume'].ewm(5).mean()
 
-    # tockenize
-    final_list_train, final_list_test = [], []
-    for sent in x_train:
-        final_list_train.append([onehot_dict[preprocess_string(word)] for word in sent.lower().split()
-                                 if preprocess_string(word) in onehot_dict.keys()])
-    for sent in x_val:
-        final_list_test.append([onehot_dict[preprocess_string(word)] for word in sent.lower().split()
-                                if preprocess_string(word) in onehot_dict.keys()])
+    # Remove columns that won't be used as features
+    del (data['open'])
+    del (data['high'])
+    del (data['low'])
+    del (data['volume'])
+    del (data['Adj Close'])
 
-    encoded_train = [1 if label == 'positive' else 0 for label in y_train]
-    encoded_test = [1 if label == 'positive' else 0 for label in y_val]
-    return np.array(final_list_train), np.array(encoded_train), np.array(final_list_test), np.array(
-        encoded_test), onehot_dict
-
-
-def padding_(sentences, seq_len):
-    features = np.zeros((len(sentences), seq_len), dtype=int)
-    for ii, review in enumerate(sentences):
-        if len(review) != 0:
-            features[ii, -len(review):] = np.array(review)[:seq_len]
-    return features
+    return data
 
 
-def acc(pred, label):
-    pred = torch.round(pred.squeeze())
-    return torch.sum(pred == label.squeeze()).item()
+def _produce_prediction(data, window):
+    """
+    Function that produces the 'truth' values
+    At a given row, it looks 'window' rows ahead to see if the price increased (1) or decreased (0)
+    :param window: number of days, or rows to look ahead to see what the price did
+    """
+    prediction = (data.shift(-window)['close'] >= data['close'])
+    prediction = prediction.iloc[:-window]
+    data['pred'] = prediction.astype(int)
+
+    return data
+
+
+def _train_KNN(X_train, y_train, X_test, y_test):
+    knn = KNeighborsClassifier()
+    # Create a dictionary of all values we want to test for n_neighbors
+    params_knn = {'n_neighbors': np.arange(1, 25)}
+
+    # Use gridsearch to test all values for n_neighbors
+    knn_gs = GridSearchCV(knn, params_knn, cv=5)
+
+    # Fit model to training data
+    knn_gs.fit(X_train, y_train)
+
+    # Save best model
+    knn_best = knn_gs.best_estimator_
+
+    # Check best n_neigbors value
+    print(knn_gs.best_params_)
+
+    prediction = knn_best.predict(X_test)
+
+    print(classification_report(y_test, prediction))
+    print(confusion_matrix(y_test, prediction))
+
+    return knn_best
+
+
+def _ensemble_model(rf_model, knn_model, X_train, y_train, X_test, y_test):
+    # Create a dictionary of our models
+    estimators = [('knn', knn_model), ('rf', rf_model)]
+
+    # Create our voting classifier, inputting our models
+    ensemble = VotingClassifier(estimators, voting='hard')
+
+    # fit model to training data
+    ensemble.fit(X_train, y_train)
+
+    # test our model on the test data
+    print(ensemble.score(X_test, y_test))
+
+    prediction = ensemble.predict(X_test)
+
+    print(classification_report(y_test, prediction))
+    print(confusion_matrix(y_test, prediction))
+
+    return ensemble
+
+
+def _train_random_forest(X_train, y_train, X_test, y_test):
+    """
+    Function that uses random forest classifier to train the model
+    :return:
+    """
+    # Create a new random forest classifier
+    rf = RandomForestClassifier()
+
+    # Dictionary of all values we want to test for n_estimators
+    params_rf = {'n_estimators': [110, 130, 140, 150, 160, 180, 200]}
+
+    # Use gridsearch to test all values for n_estimators
+    rf_gs = GridSearchCV(rf, params_rf, cv=5)
+
+    # Fit model to training data
+    rf_gs.fit(X_train, y_train)
+
+    # Save best model
+    rf_best = rf_gs.best_estimator_
+
+    # Check best n_estimators value
+    print(rf_gs.best_params_)
+
+    prediction = rf_best.predict(X_test)
+
+    print(classification_report(y_test, prediction))
+    print(confusion_matrix(y_test, prediction))
+
+    return rf_best
+
+
+def cross_Validation(data):
+    # Split data into equal partitions of size len_train
+
+    num_train = 10  # Increment of how many starting points (len(data) / num_train  =  number of train-test sets)
+    len_train = 40  # Length of each train-test set
+
+    # Lists to store the results from each model
+    rf_RESULTS = []
+    knn_RESULTS = []
+    ensemble_RESULTS = []
+
+    i = 0
+    while True:
+
+        # Partition the data into chunks of size len_train every num_train days
+        df = data.iloc[i * num_train: (i * num_train) + len_train]
+        i += 1
+        print(i * num_train, (i * num_train) + len_train)
+
+        if len(df) < 40:
+            break
+
+        y = df['pred']
+        features = [x for x in df.columns if x not in ['pred']]
+        X = df[features]
+
+        X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=7 * len(X) // 10, shuffle=False)
+
+        rf_model = _train_random_forest(X_train, y_train, X_test, y_test)
+        knn_model = _train_KNN(X_train, y_train, X_test, y_test)
+        ensemble_model = _ensemble_model(rf_model, knn_model, X_train, y_train, X_test, y_test)
+
+        rf_prediction = rf_model.predict(X_test)
+        knn_prediction = knn_model.predict(X_test)
+        ensemble_prediction = ensemble_model.predict(X_test)
+
+        print('rf prediction is ', rf_prediction)
+        print('knn prediction is ', knn_prediction)
+        print('ensemble prediction is ', ensemble_prediction)
+        print('truth values are ', y_test.values)
+
+        rf_accuracy = accuracy_score(y_test.values, rf_prediction)
+        knn_accuracy = accuracy_score(y_test.values, knn_prediction)
+        ensemble_accuracy = accuracy_score(y_test.values, ensemble_prediction)
+
+        print(rf_accuracy, knn_accuracy, ensemble_accuracy)
+        rf_RESULTS.append(rf_accuracy)
+        knn_RESULTS.append(knn_accuracy)
+        ensemble_RESULTS.append(ensemble_accuracy)
+
+    prediction = ensemble_model.predict(live_pred_data)
+    print(prediction)
+
+    print('RF Accuracy = ' + str(sum(rf_RESULTS) / len(rf_RESULTS)))
+    print('KNN Accuracy = ' + str(sum(knn_RESULTS) / len(knn_RESULTS)))
+    print('Ensemble Accuracy = ' + str(sum(ensemble_RESULTS) / len(ensemble_RESULTS)))
 
 
 def main():
-    class SentimentRNN(nn.Module):
-        def __init__(self, no_layers, vocab_size, hidden_dim, embedding_dim, drop_prob=0.5):
-            super(SentimentRNN, self).__init__()
-
-            self.output_dim = output_dim
-            self.hidden_dim = hidden_dim
-
-            self.no_layers = no_layers
-            self.vocab_size = vocab_size
-
-            # embedding and LSTM layers
-            self.embedding = nn.Embedding(vocab_size, embedding_dim)
-
-            # lstm
-            self.lstm = nn.LSTM(input_size=embedding_dim, hidden_size=self.hidden_dim,
-                                num_layers=no_layers, batch_first=True)
-
-            # dropout layer
-            self.dropout = nn.Dropout(0.3)
-
-            # linear and sigmoid layer
-            self.fc = nn.Linear(self.hidden_dim, output_dim)
-            self.sig = nn.Sigmoid()
-
-        def forward(self, x, hidden):
-            batch_size = x.size(0)
-            # embeddings and lstm_out
-            embeds = self.embedding(x)  # shape: B x S x Feature   since batch = True
-            # print(embeds.shape)  #[50, 500, 1000]
-            lstm_out, hidden = self.lstm(embeds, hidden)
-
-            lstm_out = lstm_out.contiguous().view(-1, self.hidden_dim)
-
-            # dropout and fully connected layer
-            out = self.dropout(lstm_out)
-            out = self.fc(out)
-
-            # sigmoid function
-            sig_out = self.sig(out)
-
-            # reshape to be batch_size first
-            sig_out = sig_out.view(batch_size, -1)
-
-            sig_out = sig_out[:, -1]  # get last batch of labels
-
-            # return last sigmoid output and hidden state
-            return sig_out, hidden
-
-        def init_hidden(self, batch_size):
-            ''' Initializes hidden state '''
-            # Create two new tensors with sizes n_layers x batch_size x hidden_dim,
-            # initialized to zero, for hidden state and cell state of LSTM
-            h0 = torch.zeros((self.no_layers, batch_size, self.hidden_dim)).to(device)
-            c0 = torch.zeros((self.no_layers, batch_size, self.hidden_dim)).to(device)
-            hidden = (h0, c0)
-            return hidden
-
-        # function to predict accuracy
-
-    is_cuda = torch.cuda.is_available()
-
-    # If we have a GPU available, we'll set our device to GPU. We'll use this device variable later in our code.
-    if is_cuda:
-        device = torch.device("cuda")
-        print("GPU is available")
-    else:
-        device = torch.device("cpu")
-        print("GPU not available, CPU used")
-
-    base_csv = 'Project_Data/IMDB Dataset.csv'
-    df = pd.read_csv(base_csv)
-
-    X, y = df['review'].values, df['sentiment'].values
-    x_train, x_test, y_train, y_test = train_test_split(X, y, stratify=y)
-    print(f'shape of train data is {x_train.shape}')
-    print(f'shape of test data is {x_test.shape}')
-
-    dd = pd.Series(y_train).value_counts()
-    sns.barplot(x=np.array(['negative', 'positive']), y=dd.values)
+    """
+    Next we pull the historical data using yfinance
+    Rename the column names because finta uses the lowercase names
+    """
+    start = (datetime.date.today() - datetime.timedelta(NUM_DAYS))
+    end = datetime.datetime.today()
+    data = yf.download(symbol, start=start, end=end, interval=INTERVAL)
+    data.rename(columns={"Close": 'close', "High": 'high', "Low": 'low', 'Volume': 'volume', 'Open': 'open'},
+                inplace=True)
+    print(data)
+    tmp = data.iloc[-60:]
+    tmp['close'].plot()
     plt.show()
 
-    x_train, y_train, x_test, y_test, vocab = tockenize(x_train, y_train, x_test, y_test)
-    print(f'Length of vocabulary is {len(vocab)}')
-
-    rev_len = [len(i) for i in x_train]
-    pd.Series(rev_len).hist()
-    plt.show()
-    pd.Series(rev_len).describe()
-
-    # we have very less number of reviews with length > 500.
-    # So we will consideronly those below it.
-    x_train_pad = padding_(x_train, 500)
-    x_test_pad = padding_(x_test, 500)
-
-    # create Tensor datasets
-    train_data = TensorDataset(torch.from_numpy(x_train_pad), torch.from_numpy(y_train))
-    valid_data = TensorDataset(torch.from_numpy(x_test_pad), torch.from_numpy(y_test))
-
-    # dataloaders
-    batch_size = 50
-
-    # make sure to SHUFFLE your data
-    train_loader = DataLoader(train_data, shuffle=True, batch_size=batch_size)
-    valid_loader = DataLoader(valid_data, shuffle=True, batch_size=batch_size)
-
-    # obtain one batch of training data
-    dataiter = iter(train_loader)
-    sample_x, sample_y = dataiter.next()
-
-    print('Sample input size: ', sample_x.size())  # batch_size, seq_length
-    print('Sample input: \n', sample_x)
-    print('Sample input: \n', sample_y)
-
-    no_layers = 2
-    vocab_size = len(vocab) + 1  # extra 1 for padding
-    embedding_dim = 64
-    output_dim = 1
-    hidden_dim = 256
-
-    model = SentimentRNN(no_layers, vocab_size, hidden_dim, embedding_dim, drop_prob=0.5)
-
-    # moving to gpu
-    model.to(device)
-
-    print(model)
-
-    # loss and optimization functions
-    lr = 0.001
-
-    criterion = nn.BCELoss()
-
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-    clip = 5
-    epochs = 5
-    valid_loss_min = np.Inf
-    # train for some number of epochs
-    epoch_tr_loss, epoch_vl_loss = [], []
-    epoch_tr_acc, epoch_vl_acc = [], []
-
-    for epoch in range(epochs):
-        print(epoch)
-        train_losses = []
-        train_acc = 0.0
-        model.train()
-        # initialize hidden state
-        h = model.init_hidden(batch_size)
-        for inputs, labels in train_loader:
-            print(1)
-            inputs, labels = inputs.to(device), labels.to(device)
-            # Creating new variables for the hidden state, otherwise
-            # we'd backprop through the entire training history
-            h = tuple([each.data for each in h])
-
-            model.zero_grad()
-            output, h = model(inputs, h)
-
-            # calculate the loss and perform backprop
-            loss = criterion(output.squeeze(), labels.float())
-            loss.backward()
-            train_losses.append(loss.item())
-            # calculating accuracy
-            accuracy = acc(output, labels)
-            train_acc += accuracy
-            # `clip_grad_norm` helps prevent the exploding gradient problem in RNNs / LSTMs.
-            nn.utils.clip_grad_norm_(model.parameters(), clip)
-            optimizer.step()
-
-        val_h = model.init_hidden(batch_size)
-        val_losses = []
-        val_acc = 0.0
-        model.eval()
-        for inputs, labels in valid_loader:
-            val_h = tuple([each.data for each in val_h])
-
-            inputs, labels = inputs.to(device), labels.to(device)
-
-            output, val_h = model(inputs, val_h)
-            val_loss = criterion(output.squeeze(), labels.float())
-
-            val_losses.append(val_loss.item())
-
-            accuracy = acc(output, labels)
-            val_acc += accuracy
-
-        epoch_train_loss = np.mean(train_losses)
-        epoch_val_loss = np.mean(val_losses)
-        epoch_train_acc = train_acc / len(train_loader.dataset)
-        epoch_val_acc = val_acc / len(valid_loader.dataset)
-        epoch_tr_loss.append(epoch_train_loss)
-        epoch_vl_loss.append(epoch_val_loss)
-        epoch_tr_acc.append(epoch_train_acc)
-        epoch_vl_acc.append(epoch_val_acc)
-        print(f'Epoch {epoch + 1}')
-        print(f'train_loss : {epoch_train_loss} val_loss : {epoch_val_loss}')
-        print(f'train_accuracy : {epoch_train_acc * 100} val_accuracy : {epoch_val_acc * 100}')
-        if epoch_val_loss <= valid_loss_min:
-            torch.save(model.state_dict(), '../working/state_dict.pt')
-            print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_loss_min,
-                                                                                            epoch_val_loss))
-            valid_loss_min = epoch_val_loss
-        print(25 * '==')
-
-    fig = plt.figure(figsize=(20, 6))
-    plt.subplot(1, 2, 1)
-    plt.plot(epoch_tr_acc, label='Train Acc')
-    plt.plot(epoch_vl_acc, label='Validation Acc')
-    plt.title("Accuracy")
-    plt.legend()
-    plt.grid()
-
-    plt.subplot(1, 2, 2)
-    plt.plot(epoch_tr_loss, label='Train loss')
-    plt.plot(epoch_vl_loss, label='Validation loss')
-    plt.title("Loss")
-    plt.legend()
-    plt.grid()
-
+    """
+    Next we clean our data and perform feature engineering to create new technical indicator features that our
+    model can learn from
+    """
+    data = _exponential_smooth(data, 0.65)
+    tmp1 = data.iloc[-60:]
+    tmp1['close'].plot()
     plt.show()
 
-    def predict_text(text):
-        word_seq = np.array([vocab[preprocess_string(word)] for word in text.split()
-                             if preprocess_string(word) in vocab.keys()])
-        word_seq = np.expand_dims(word_seq, axis=0)
-        pad = torch.from_numpy(padding_(word_seq, 500))
-        inputs = pad.to(device)
-        batch_size = 1
-        h = model.init_hidden(batch_size)
-        h = tuple([each.data for each in h])
-        output, h = model(inputs, h)
-        return (output.item())
+    """
+    
+    """
+    data = _get_indicator_data(data)
+    print(data.columns)
+    live_pred_data = data.iloc[-16:-11]
+    data = _produce_prediction(data, window=15)
+    del (data['close'])
+    data = data.dropna()  # Some indicators produce NaN values for the first few rows, we just remove them here
+    data.tail()
+    del (live_pred_data['close'])
 
-    index = 30
-    print(df['review'][index])
-    print('=' * 70)
-    print(f'Actual sentiment is  : {df["sentiment"][index]}')
-    print('=' * 70)
-    pro = predict_text(df['review'][index])
-    status = "positive" if pro > 0.5 else "negative"
-    pro = (1 - pro) if status == "negative" else pro
-    print(f'Predicted sentiment is {status} with a probability of {pro}')
-
-    index = 32
-    print(df['review'][index])
-    print('=' * 70)
-    print(f'Actual sentiment is  : {df["sentiment"][index]}')
-    print('=' * 70)
-    pro = predict_text(df['review'][index])
-    status = "positive" if pro > 0.5 else "negative"
-    pro = (1 - pro) if status == "negative" else pro
-    print(f'predicted sentiment is {status} with a probability of {pro}')
+    cross_Validation(data)
 
 
 if __name__ == '__main__':
