@@ -174,6 +174,7 @@ def cross_Validation(data):
         # Partition the data into chunks of size len_train every num_train days
         df = data.iloc[i * num_train: (i * num_train) + len_train]
         i += 1
+        print("=========> No.", i, )
         print(i * num_train, (i * num_train) + len_train)
 
         if len(df) < 40:
