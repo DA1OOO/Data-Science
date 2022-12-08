@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sn
 from nltk.corpus import stopwords
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, gridspec
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import PassiveAggressiveClassifier
@@ -33,13 +33,28 @@ def data_clean(df):
 
 # 生成词云
 def word_cloud(data):
-    plt.imshow(WordCloud(collocations=False, background_color='white', random_state=5726).generate(data),
-               interpolation='bilinear')
+    real_news = data[data['label'] == 'REAL']
+    fake_news = data[data['label'] == 'FAKE']
+    gs = gridspec.GridSpec(2, 1)
+    fig = plt.figure(tight_layout=True)
+    real_word_cloud = WordCloud(collocations=False, background_color='white', random_state=5726).generate(
+        real_news['text'].to_string().lower())
+    fig.add_subplot(gs[0, 0])
+    plt.imshow(real_word_cloud, interpolation='bilinear')
+    plt.title('Real News')
+
+    fake_word_cloud = WordCloud(collocations=False, background_color='white', random_state=5726).generate(
+        fake_news['text'].to_string().lower())
+    fig.add_subplot(gs[1, 0])
+    plt.imshow(fake_word_cloud, interpolation='bilinear')
+    plt.title('Fake News')
+
     plt.savefig('news_word_cloud.png')
     print('===> Word cloud generated path: /news_word_cloud.png')
 
 
 def draw_confusion_matrix(cm):
+    plt.close()
     df_cm = pd.DataFrame(cm)
     ax = sn.heatmap(df_cm, annot=True, fmt='.20g')
     ax.set_title('confusion matrix')  # 标题
@@ -57,7 +72,7 @@ def main():
     # 取label列
     labels = df.label
     # 清洗后的数据生成词云
-    word_cloud(df['text'].to_string().lower())
+    word_cloud(df)
     # 数据集划分
     x_train, x_test, y_train, y_test = train_test_split(df['text'], labels, test_size=0.2, random_state=7)
     # 原始数据转TF-IDF
