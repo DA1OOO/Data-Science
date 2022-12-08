@@ -57,18 +57,18 @@ def word_cloud(data):
     print('===> Word cloud generated path: /news_word_cloud.png')
 
 
-def draw_confusion_matrix(cm):
+def draw_confusion_matrix(cm, name):
     plt.close()
     df_cm = pd.DataFrame(cm)
     ax = sn.heatmap(df_cm, annot=True, fmt='.20g')
-    ax.set_title('confusion matrix')  # 标题
+    ax.set_title(name)  # 标题
     ax.set_xlabel('predict')  # x轴
     ax.set_ylabel('true')  # y轴
-    plt.savefig('confusion_matrix.png')
-    print('===> Confusion Matrix file path: /confusion_matrix.png')
+    plt.savefig(name + '.png')
+    print('===> Confusion Matrix file path: /' + name + '.png')
 
 
-def passive_aggerssive_classify(x_train, y_train, x_test, y_test):
+def passive_aggressive_classify(x_train, y_train, x_test, y_test):
     tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
     tfidf_train = tfidf_vectorizer.fit_transform(x_train)
     tfidf_test = tfidf_vectorizer.transform(x_test)
@@ -80,8 +80,8 @@ def passive_aggerssive_classify(x_train, y_train, x_test, y_test):
     score = accuracy_score(y_test, y_pred)
     # 得到混淆矩阵
     cm = confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL'])
-    draw_confusion_matrix(cm)
-    print(f'===> Passive Aggersive Accuracy: {round(score * 100, 2)}%')
+    draw_confusion_matrix(cm, 'Passive Aggressive Classifier Confusion Matrix')
+    print(f'===> Passive Aggressive Accuracy: {round(score * 100, 2)}%')
 
 
 # 逻辑回归
@@ -96,7 +96,7 @@ def logic_regression_classify(X_train, y_train, X_test, y_test):
     score = accuracy_score(y_test, prediction)
     # 得到混淆矩阵
     cm = confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
-    draw_confusion_matrix(cm)
+    draw_confusion_matrix(cm, 'Logic Regression Classifier Confusion Matrix')
     print(f'===> Logic Regression Accuracy: {round(score * 100, 2)}%')
 
 
@@ -114,7 +114,7 @@ def decision_tree_classify(X_train, y_train, X_test, y_test):
     score = accuracy_score(y_test, prediction)
     # 得到混淆矩阵
     cm = confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
-    draw_confusion_matrix(cm)
+    draw_confusion_matrix(cm, 'Decision Tree Classifier Confusion Matrix')
     print(f'===> Decision Tree Accuracy: {round(score * 100, 2)}%')
 
 
@@ -129,7 +129,7 @@ def random_forest_classify(X_train, y_train, X_test, y_test):
     score = accuracy_score(y_test, prediction)
     # 得到混淆矩阵
     cm = confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
-    draw_confusion_matrix(cm)
+    draw_confusion_matrix(cm, 'Random Forest Classifier Confusion Matrix')
     print(f'===> Random Forest Accuracy: {round(score * 100, 2)}%')
 
 
@@ -149,7 +149,7 @@ def main():
     # RandomForestClassifier
     random_forest_classify(x_train, y_train, x_test, y_test)
     # PassiveAggressiveClassifier
-    passive_aggerssive_classify(x_train, y_train, x_test, y_test)
+    passive_aggressive_classify(x_train, y_train, x_test, y_test)
     # DecisionTreeClassifier
     decision_tree_classify(x_train, y_train, x_test, y_test)
     # LogicRegressionClassifier
