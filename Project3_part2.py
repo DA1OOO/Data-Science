@@ -5,10 +5,14 @@ import seaborn as sn
 from nltk.corpus import stopwords
 from matplotlib import pyplot as plt, gridspec
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
 from sklearn.linear_model import PassiveAggressiveClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
+from sklearn.pipeline import Pipeline
 from wordcloud import WordCloud
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 
 # 数据清洗
@@ -64,18 +68,7 @@ def draw_confusion_matrix(cm):
     print('===> Confusion Matrix file path: /confusion_matrix.png')
 
 
-def main():
-    # 数据读取
-    df = pd.read_csv('Project_Data/news.csv')
-    # 数据清洗
-    df = data_clean(df)
-    # 取label列
-    labels = df.label
-    # 清洗后的数据生成词云
-    word_cloud(df)
-    # 数据集划分
-    x_train, x_test, y_train, y_test = train_test_split(df['text'], labels, test_size=0.2, random_state=7)
-    # 原始数据转TF-IDF
+def passive_aggerssive_classify(x_train, y_train, x_test, y_test):
     tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
     tfidf_train = tfidf_vectorizer.fit_transform(x_train)
     tfidf_test = tfidf_vectorizer.transform(x_test)
@@ -88,7 +81,79 @@ def main():
     # 得到混淆矩阵
     cm = confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL'])
     draw_confusion_matrix(cm)
-    print(f'===> Accuracy: {round(score * 100, 2)}%')
+    print(f'===> Passive Aggersive Accuracy: {round(score * 100, 2)}%')
+
+
+# 逻辑回归
+def logic_regression_classify(X_train, y_train, X_test, y_test):
+    # Vectorizing and applying TF-IDF
+    pipe = Pipeline([('vect', CountVectorizer()),
+                     ('tfidf', TfidfTransformer()),
+                     ('model',
+                      LogisticRegression())])  # Fitting the model
+    model = pipe.fit(X_train, y_train)  # Accuracy
+    prediction = model.predict(X_test)
+    score = accuracy_score(y_test, prediction)
+    # 得到混淆矩阵
+    cm = confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
+    draw_confusion_matrix(cm)
+    print(f'===> Logic Regression Accuracy: {round(score * 100, 2)}%')
+
+
+# 决策树
+def decision_tree_classify(X_train, y_train, X_test, y_test):
+    pipe = Pipeline([('vect', CountVectorizer()),
+                     ('tfidf', TfidfTransformer()),
+                     ('model', DecisionTreeClassifier(criterion='entropy',
+                                                      max_depth=20,
+                                                      splitter='best',
+                                                      random_state=42))])
+    # Fitting the model
+    model = pipe.fit(X_train, y_train)  # Accuracy
+    prediction = model.predict(X_test)
+    score = accuracy_score(y_test, prediction)
+    # 得到混淆矩阵
+    cm = confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
+    draw_confusion_matrix(cm)
+    print(f'===> Decision Tree Accuracy: {round(score * 100, 2)}%')
+
+
+def random_forest_classify(X_train, y_train, X_test, y_test):
+    pipe = Pipeline([('vect', CountVectorizer()),
+                     ('tfidf', TfidfTransformer()),
+                     ('model',
+                      RandomForestClassifier(n_estimators=50,
+                                             criterion="entropy"))])
+    model = pipe.fit(X_train, y_train)
+    prediction = model.predict(X_test)
+    score = accuracy_score(y_test, prediction)
+    # 得到混淆矩阵
+    cm = confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
+    draw_confusion_matrix(cm)
+    print(f'===> Random Forest Accuracy: {round(score * 100, 2)}%')
+
+
+def main():
+    # 数据读取
+    df = pd.read_csv('Project_Data/news.csv')
+    # 数据清洗
+    df = data_clean(df)
+    # 取label列
+    labels = df.label
+    # 清洗后的数据生成词云
+    word_cloud(df)
+    # 数据集划分
+    x_train, x_test, y_train, y_test = train_test_split(df['text'], labels, test_size=0.2, random_state=7)
+    # 原始数据转TF-IDF
+
+    # RandomForestClassifier
+    random_forest_classify(x_train, y_train, x_test, y_test)
+    # PassiveAggressiveClassifier
+    passive_aggerssive_classify(x_train, y_train, x_test, y_test)
+    # DecisionTreeClassifier
+    decision_tree_classify(x_train, y_train, x_test, y_test)
+    # LogicRegressionClassifier
+    logic_regression_classify(x_train, y_train, x_test, y_test)
 
 
 if __name__ == '__main__':
