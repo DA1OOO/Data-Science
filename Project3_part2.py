@@ -1,6 +1,7 @@
 import re
 import numpy as np
 import pandas as pd
+import seaborn as sn
 from nltk.corpus import stopwords
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -38,6 +39,16 @@ def word_cloud(data):
     print('===> Word cloud generated path: /news_word_cloud.png')
 
 
+def draw_confusion_matrix(cm):
+    df_cm = pd.DataFrame(cm)
+    ax = sn.heatmap(df_cm, annot=True, fmt='.20g')
+    ax.set_title('confusion matrix')  # 标题
+    ax.set_xlabel('predict')  # x轴
+    ax.set_ylabel('true')  # y轴
+    plt.savefig('confusion_matrix.png')
+    print('===> Confusion Matrix file path: /confusion_matrix.png')
+
+
 def main():
     # 数据读取
     df = pd.read_csv('Project_Data/news.csv')
@@ -59,9 +70,10 @@ def main():
     # 用分类器进行预测，并得到预测精准度
     y_pred = pac.predict(tfidf_test)
     score = accuracy_score(y_test, y_pred)
-    print(f'===> Accuracy: {round(score * 100, 2)}%')
     # 得到混淆矩阵
-    print('====> Confusion Matrix: ', confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL']))
+    cm = confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL'])
+    draw_confusion_matrix(cm)
+    print(f'===> Accuracy: {round(score * 100, 2)}%')
 
 
 if __name__ == '__main__':
