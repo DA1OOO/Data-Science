@@ -65,14 +65,14 @@ def draw_confusion_matrix(cm1, cm2, cm3, cm4):
     df_cm = pd.DataFrame(cm1)
     fig.add_subplot(gs[0, 0])
     ax = sn.heatmap(df_cm, annot=True, fmt='.20g')
-    ax.set_title('Passive Aggressive Confusion Matrix')  # 标题
+    ax.set_title('Random Forest Confusion Matrix')  # 标题
     ax.set_xlabel('predict')  # x轴
     ax.set_ylabel('true')  # y轴
 
     df_cm = pd.DataFrame(cm1)
     fig.add_subplot(gs[0, 1])
     ax = sn.heatmap(df_cm, annot=True, fmt='.20g')
-    ax.set_title('Logic Regression Confusion Matrix')  # 标题
+    ax.set_title('Passive Aggressive Confusion Matrix')  # 标题
     ax.set_xlabel('predict')  # x轴
     ax.set_ylabel('true')  # y轴
 
@@ -86,12 +86,12 @@ def draw_confusion_matrix(cm1, cm2, cm3, cm4):
     df_cm = pd.DataFrame(cm1)
     fig.add_subplot(gs[1, 1])
     ax = sn.heatmap(df_cm, annot=True, fmt='.20g')
-    ax.set_title('Random Forest Confusion Matrix')  # 标题
+    ax.set_title('Logic Regression Confusion Matrix')  # 标题
     ax.set_xlabel('predict')  # x轴
     ax.set_ylabel('true')  # y轴
 
     plt.savefig('confusion_matrix.png')
-    print('===> Confusion Matrix file path: /.png')
+    print('===> Confusion Matrix Picture file path: /confusion_matrix.png')
 
 
 def passive_aggressive_classify(x_train, y_train, x_test, y_test):
@@ -106,7 +106,7 @@ def passive_aggressive_classify(x_train, y_train, x_test, y_test):
     score = accuracy_score(y_test, y_pred)
     print(f'===> Passive Aggressive Accuracy: {round(score * 100, 2)}%')
     # 得到混淆矩阵
-    return confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL'])
+    return confusion_matrix(y_test, y_pred, labels=['FAKE', 'REAL']), round(score * 100, 2)
 
 
 # 逻辑回归
@@ -122,7 +122,7 @@ def logic_regression_classify(X_train, y_train, X_test, y_test):
 
     print(f'===> Logic Regression Accuracy: {round(score * 100, 2)}%')
     # 得到混淆矩阵
-    return confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
+    return confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL']), round(score * 100, 2)
 
 
 # 决策树
@@ -139,7 +139,7 @@ def decision_tree_classify(X_train, y_train, X_test, y_test):
     score = accuracy_score(y_test, prediction)
     print(f'===> Decision Tree Accuracy: {round(score * 100, 2)}%')
     # 得到混淆矩阵
-    return confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
+    return confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL']), round(score * 100, 2)
 
 
 def random_forest_classify(X_train, y_train, X_test, y_test):
@@ -153,7 +153,18 @@ def random_forest_classify(X_train, y_train, X_test, y_test):
     score = accuracy_score(y_test, prediction)
     print(f'===> Random Forest Accuracy: {round(score * 100, 2)}%')
     # 得到混淆矩阵
-    return confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL'])
+    return confusion_matrix(y_test, prediction, labels=['FAKE', 'REAL']), round(score * 100, 2)
+
+
+def draw_accuracy_compare(accuracy):
+    plt.close()
+    accuracy.plot(kind='barh', stacked=False, figsize=(10, 5))
+    plt.title("Different Classifier Accuracy")
+    plt.yticks([])
+    plt.xlabel('%')
+    plt.ylabel('Classifier')
+    plt.grid()
+    plt.savefig('accuracy_compare.png')
 
 
 def main():
@@ -167,18 +178,20 @@ def main():
     word_cloud(df)
     # 数据集划分
     x_train, x_test, y_train, y_test = train_test_split(df['text'], labels, test_size=0.2, random_state=7)
-    # 原始数据转TF-IDF
-
     # RandomForestClassifier
-    cm1 = random_forest_classify(x_train, y_train, x_test, y_test)
+    cm1, accuracy1 = random_forest_classify(x_train, y_train, x_test, y_test)
     # PassiveAggressiveClassifier
-    cm2 = passive_aggressive_classify(x_train, y_train, x_test, y_test)
+    cm2, accuracy2 = passive_aggressive_classify(x_train, y_train, x_test, y_test)
     # DecisionTreeClassifier
-    cm3 = decision_tree_classify(x_train, y_train, x_test, y_test)
+    cm3, accuracy3 = decision_tree_classify(x_train, y_train, x_test, y_test)
     # LogicRegressionClassifier
-    cm4 = logic_regression_classify(x_train, y_train, x_test, y_test)
-
+    cm4, accuracy4 = logic_regression_classify(x_train, y_train, x_test, y_test)
+    # 画出混淆矩阵
     draw_confusion_matrix(cm1, cm2, cm3, cm4)
+    # 画出accuracy对比
+    accuracy = pd.DataFrame(columns=['random forest', 'passive aggressive', 'decision tree', 'logic regression'])
+    accuracy.loc[0] = [accuracy1, accuracy2, accuracy3, accuracy4]
+    draw_accuracy_compare(accuracy)
 
 
 if __name__ == '__main__':
