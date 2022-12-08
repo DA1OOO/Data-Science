@@ -1,0 +1,4 @@
+//import yfinance as yf
+
+Used the yfinance API to gather all historical stock market data.
+It’s taken directly from the yahoo finance website.
