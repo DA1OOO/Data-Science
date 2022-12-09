@@ -1,7 +1,11 @@
 import re
+
+import nltk
 import numpy as np
 import pandas as pd
 import seaborn as sn
+
+import gensim
 from nltk.corpus import stopwords
 from matplotlib import pyplot as plt, gridspec
 from sklearn.model_selection import train_test_split
@@ -13,6 +17,8 @@ from wordcloud import WordCloud
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 
 # 数据清洗
@@ -167,13 +173,38 @@ def draw_accuracy_compare(accuracy):
     plt.savefig('accuracy_compare.png')
 
 
+def deepl(df):
+    stop_words = stopwords.words('english')
+    stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
+
+    def preprocess(text):
+        result = []
+        for token in gensim.utils.simple_preprocess(text):
+            if token not in gensim.parsing.preprocessing.STOPWORDS and len(token) > 3 and token not in stop_words:
+                result.append(token)
+        return result
+
+    df['clean'] = df['text'].apply(preprocess)
+    # Obtaining The Total Words Present In The Dataset
+    list_of_words = []
+    for i in df.clean:
+        for j in i:
+            list_of_words.append(j)
+    total_words = len(list(set(list_of_words)))
+    df['clean_joined'] = df['clean'].apply(lambda x: " ".join(x))
+    x_train, x_test, y_train, y_test = train_test_split(df.clean_joined, df.label, test_size=0.2)
+    tokenizer = Tokenizer(num_words=total_words)
+    tokenizer.fit_on_texts(x_train)
+    train_sequences = tokenizer.texts_to_sequences(x_train)
+    test_sequences = tokenizer.texts_to_sequences(x_test)
+    padded_train = pad_sequences(train_sequences, maxlen=40, padding='post', truncating='post')
+    padded_test = pad_sequences(test_sequences, maxlen=40, truncating='post')
+
 def main():
     # 数据读取
     df = pd.read_csv('Project_Data/news.csv')
-    print(df['text'].head().to_string())
     # 数据清洗
     df = data_clean(df)
-    print(df['text'].head().to_string())
     # 取label列
     labels = df.label
     # 清洗后的数据生成词云
@@ -188,6 +219,8 @@ def main():
     cm3, accuracy3 = decision_tree_classify(x_train, y_train, x_test, y_test)
     # LogicRegressionClassifier
     cm4, accuracy4 = logic_regression_classify(x_train, y_train, x_test, y_test)
+
+    deepl(df)
     # 画出混淆矩阵
     draw_confusion_matrix(cm1, cm2, cm3, cm4)
     # 画出accuracy对比
