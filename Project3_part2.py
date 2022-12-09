@@ -170,8 +170,10 @@ def draw_accuracy_compare(accuracy):
 def main():
     # 数据读取
     df = pd.read_csv('Project_Data/news.csv')
+    print(df['text'].head().to_string())
     # 数据清洗
     df = data_clean(df)
+    print(df['text'].head().to_string())
     # 取label列
     labels = df.label
     # 清洗后的数据生成词云
